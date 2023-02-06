@@ -11,6 +11,7 @@ import com.didiglobal.booster.instrument.sharedpreferences.BoosterSharedPreferen
 public class ShadowSharedPreferences {
 
     public static SharedPreferences getSharedPreferences(final Context context, String name, final int mode) {
+        Log.d("InstabridgeBooser", "getSharedPreferences");
         if (TextUtils.isEmpty(name)) {
             name = "null";
         }
