@@ -34,6 +34,8 @@ public class ShadowExecutors {
 
     private static final int NCPU = Runtime.getRuntime().availableProcessors();
 
+    private static final ExecutorService EXECUTOR = Executors.newCachedThreadPool();
+
     /**
      * The maximum pool size
      */
@@ -51,11 +53,11 @@ public class ShadowExecutors {
     // <editor-fold desc="- named fixed thread pool">
 
     public static ExecutorService newFixedThreadPool(final int nThreads, final String name) {
-        return Executors.newFixedThreadPool(nThreads, new NamedThreadFactory(name));
+        return EXECUTOR;
     }
 
     public static ExecutorService newFixedThreadPool(final int nThreads, final ThreadFactory factory, final String name) {
-        return Executors.newFixedThreadPool(nThreads, new NamedThreadFactory(factory, name));
+        return EXECUTOR;
     }
 
     // </editor-fold>
@@ -63,11 +65,11 @@ public class ShadowExecutors {
     // <editor-fold desc="- named single thread executor">
 
     public static ExecutorService newSingleThreadExecutor(final String name) {
-        return Executors.newSingleThreadExecutor(new NamedThreadFactory(name));
+        return EXECUTOR;
     }
 
     public static ExecutorService newSingleThreadExecutor(final ThreadFactory factory, final String name) {
-        return Executors.newSingleThreadExecutor(new NamedThreadFactory(factory, name));
+        return EXECUTOR;
     }
 
     // </editor-fold>
@@ -75,11 +77,11 @@ public class ShadowExecutors {
     // <editor-fold desc="- named cached thread pool">
 
     public static ExecutorService newCachedThreadPool(final String name) {
-        return Executors.newCachedThreadPool(new NamedThreadFactory(name));
+        return EXECUTOR;
     }
 
     public static ExecutorService newCachedThreadPool(final ThreadFactory factory, final String name) {
-        return Executors.newCachedThreadPool(new NamedThreadFactory(factory, name));
+        return EXECUTOR;
     }
 
     // </editor-fold>
@@ -189,13 +191,13 @@ public class ShadowExecutors {
     public static ExecutorService newOptimizedCachedThreadPool(final String name) {
         final ThreadPoolExecutor executor = new ThreadPoolExecutor(0, Integer.MAX_VALUE, 60L, TimeUnit.SECONDS, new SynchronousQueue<Runnable>(), new NamedThreadFactory(name));
         executor.allowCoreThreadTimeOut(true);
-        return executor;
+        return EXECUTOR;
     }
 
     public static ExecutorService newOptimizedCachedThreadPool(final ThreadFactory factory, final String name) {
         final ThreadPoolExecutor executor = new ThreadPoolExecutor(0, Integer.MAX_VALUE, 60L, TimeUnit.SECONDS, new SynchronousQueue<Runnable>(), new NamedThreadFactory(factory, name));
         executor.allowCoreThreadTimeOut(true);
-        return executor;
+        return EXECUTOR;
     }
 
     //</editor-fold>
