@@ -22,7 +22,6 @@ def OSSRH_PASSWORD = project.properties['OSSRH_PASSWORD'] ?: System.getenv('OSSR
 def OSSRH_STAGING_PROFILE_ID = project.properties['OSSRH_STAGING_PROFILE_ID'] ?: System.getenv('OSSRH_STAGING_PROFILE_ID')
 
 apply plugin: 'org.jetbrains.dokka'
-apply plugin: 'io.github.gradle-nexus.publish-plugin'
 
 allprojects { project ->
     apply plugin: 'java'
@@ -94,13 +93,13 @@ allprojects { project ->
 
         pom {
             name = project.name
-            url = 'https://github.com/didi/booster'
+            url = 'https://github.com/degoobackup/instabridge-booster'
             description = project.description ?: project.name
 
             scm {
-                connection = 'scm:git:git://github.com/didi/booster.git'
-                developerConnection = 'scm:git:git@github.com:didi/booster.git'
-                url = 'https://github.com/didi/booster'
+                connection = 'scm:git:git://github.com/degoobackup/instabridge-booster.git'
+                developerConnection = 'scm:git:git@github.com:degoobackup/instabridge-booster.git'
+                url = 'https://github.com/degoobackup/instabridge-booster'
             }
 
             licenses {
@@ -130,24 +129,6 @@ allprojects { project ->
                 }
             }
         }
-
-
-        if (!project.hasProperty("signing.skip")) {
-            apply plugin: 'signing'
-
-            def signingTasks = project.tasks.withType(Sign)
-            project.tasks.withType(PublishToMavenLocal) {
-                dependsOn signingTasks
-            }
-
-            project.tasks.withType(PublishToMavenRepository) {
-                dependsOn signingTasks
-            }
-
-            project.signing {
-                sign publication
-            }
-        }
     }
 
     project.afterEvaluate {
@@ -169,24 +150,4 @@ subprojects { project ->
 
 dependencies {
     implementation project(':booster-gradle-plugin')
-}
-
-nexusPublishing {
-    packageGroup = "com.didiglobal"
-
-    repositories {
-        sonatype {
-            username = OSSRH_USERNAME
-            password = OSSRH_PASSWORD
-            stagingProfileId = OSSRH_STAGING_PROFILE_ID
-        }
-    }
-
-    clientTimeout = Duration.ofSeconds(300)
-    connectTimeout = Duration.ofSeconds(60)
-
-    transitionCheckOptions {
-        maxRetries.set(3000)
-        delayBetween.set(Duration.ofMillis(3000))
-    }
 }
