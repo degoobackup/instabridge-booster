@@ -16,7 +16,7 @@ class ThreadVariantProcessor(private val project: Project) : VariantProcessor {
         if (variantBuilder is LibraryVariantBuilder || variantBuilder is DynamicFeatureVariantBuilder) {
             return
         }
-        project.dependencies.add("${variantBuilder.name}Implementation", "$GROUP:booster-android-instrument-thread:$VERSION")
+        project.dependencies.add("${variantBuilder.name}Implementation", "com.github.degoobackup.instabridge-booster:booster-android-instrument-thread:${Build.VERSION}")
     }
 
 }
