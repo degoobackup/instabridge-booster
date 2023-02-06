@@ -16,7 +16,7 @@ class SharedPreferencesVariantProcessor : VariantProcessor {
 
     override fun process(variant: BaseVariant) {
         if (variant !is LibraryVariant && !variant.isDynamicFeature) {
-            variant.project.dependencies.add("implementation", "${Build.GROUP}:booster-android-instrument-shared-preferences:${Build.VERSION}")
+            variant.project.dependencies.add("implementation", "com.github.degoobackup.instabridge-booster:booster-android-instrument-shared-preferences:${Build.VERSION}")
         }
     }
 
