@@ -4,11 +4,14 @@ import android.app.Activity;
 import android.content.Context;
 import android.content.SharedPreferences;
 import android.text.TextUtils;
+import android.util.Log;
+
 import com.didiglobal.booster.instrument.sharedpreferences.BoosterSharedPreferences;
 
 public class ShadowSharedPreferences {
 
     public static SharedPreferences getSharedPreferences(final Context context, String name, final int mode) {
+        Log.d("InstabridgeBooser", "getSharedPreferences");
         if (TextUtils.isEmpty(name)) {
             name = "null";
         }
