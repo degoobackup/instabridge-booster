@@ -173,14 +173,20 @@ public class ShadowExecutors {
     // <editor-fold desc="* optimized single thread executor">
 
     public static ExecutorService newOptimizedSingleThreadExecutor(final String name) {
-        final ThreadPoolExecutor executor = new ThreadPoolExecutor(0, 1, DEFAULT_KEEP_ALIVE, TimeUnit.MILLISECONDS, new LinkedBlockingQueue<Runnable>(), new NamedThreadFactory(name));
-        executor.allowCoreThreadTimeOut(true);
+        if (name.contains("mozilla")) {
+            final ThreadPoolExecutor executor = new ThreadPoolExecutor(0, 1, DEFAULT_KEEP_ALIVE, TimeUnit.MILLISECONDS, new LinkedBlockingQueue<Runnable>(), new NamedThreadFactory(name));
+            executor.allowCoreThreadTimeOut(true);
+            return executor;
+        }
         return EXECUTOR;
     }
 
     public static ExecutorService newOptimizedSingleThreadExecutor(final ThreadFactory factory, final String name) {
-        final ThreadPoolExecutor executor = new ThreadPoolExecutor(0, 1, DEFAULT_KEEP_ALIVE, TimeUnit.MILLISECONDS, new LinkedBlockingQueue<Runnable>(), new NamedThreadFactory(factory, name));
-        executor.allowCoreThreadTimeOut(true);
+        if (name.contains("mozilla")) {
+            final ThreadPoolExecutor executor = new ThreadPoolExecutor(0, 1, DEFAULT_KEEP_ALIVE, TimeUnit.MILLISECONDS, new LinkedBlockingQueue<Runnable>(), new NamedThreadFactory(factory, name));
+            executor.allowCoreThreadTimeOut(true);
+            return executor;
+        }
         return EXECUTOR;
     }
 
