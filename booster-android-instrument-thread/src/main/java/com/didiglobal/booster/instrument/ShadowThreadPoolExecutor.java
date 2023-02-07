@@ -1,7 +1,9 @@
 package com.didiglobal.booster.instrument;
 
 import java.util.concurrent.BlockingQueue;
+import java.util.concurrent.Executors;
 import java.util.concurrent.RejectedExecutionHandler;
+import java.util.concurrent.SynchronousQueue;
 import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
@@ -12,6 +14,8 @@ import java.util.concurrent.TimeUnit;
 public class ShadowThreadPoolExecutor extends ThreadPoolExecutor {
 
     // <editor-fold desc="- named thread pool executor">
+
+    private static final ThreadPoolExecutor EXECUTOR = newThreadPoolExecutor(0, Integer.MAX_VALUE, 60L, TimeUnit.SECONDS, new SynchronousQueue<>(), "booster-thread-pool-executor");
 
     public static ThreadPoolExecutor newThreadPoolExecutor(final int corePoolSize, final int maxPoolSize, final long keepAliveTime, final TimeUnit unit, final BlockingQueue<Runnable> workQueue, final String name) {
         return new ThreadPoolExecutor(corePoolSize, maxPoolSize, keepAliveTime, unit, workQueue, new NamedThreadFactory(name));
@@ -144,7 +148,8 @@ public class ShadowThreadPoolExecutor extends ThreadPoolExecutor {
             final String prefix,
             final boolean optimize
     ) {
-        super(corePoolSize, maximumPoolSize, keepAliveTime, unit, workQueue, new NamedThreadFactory(prefix));
+        //super(corePoolSize, maximumPoolSize, keepAliveTime, unit, workQueue, new NamedThreadFactory(prefix));
+        super(corePoolSize, maximumPoolSize, keepAliveTime, unit, workQueue, EXECUTOR.getThreadFactory());
         if (optimize) {
             allowCoreThreadTimeOut(getKeepAliveTime(unit) > 0);
         }
@@ -211,7 +216,8 @@ public class ShadowThreadPoolExecutor extends ThreadPoolExecutor {
             final String prefix,
             final boolean optimize
     ) {
-        super(corePoolSize, maximumPoolSize, keepAliveTime, unit, workQueue, new NamedThreadFactory(threadFactory, prefix));
+        //super(corePoolSize, maximumPoolSize, keepAliveTime, unit, workQueue, new NamedThreadFactory(threadFactory, prefix));
+        super(corePoolSize, maximumPoolSize, keepAliveTime, unit, workQueue, EXECUTOR.getThreadFactory());
         if (optimize) {
             allowCoreThreadTimeOut(getKeepAliveTime(unit) > 0);
         }
@@ -278,7 +284,8 @@ public class ShadowThreadPoolExecutor extends ThreadPoolExecutor {
             final String prefix,
             final boolean optimize
     ) {
-        super(corePoolSize, maximumPoolSize, keepAliveTime, unit, workQueue, new NamedThreadFactory(prefix), handler);
+        //super(corePoolSize, maximumPoolSize, keepAliveTime, unit, workQueue, new NamedThreadFactory(prefix), handler);
+        super(corePoolSize, maximumPoolSize, keepAliveTime, unit, workQueue, EXECUTOR.getThreadFactory(), handler);
         if (optimize) {
             allowCoreThreadTimeOut(getKeepAliveTime(unit) > 0);
         }
@@ -349,7 +356,8 @@ public class ShadowThreadPoolExecutor extends ThreadPoolExecutor {
             final String prefix,
             final boolean optimize
     ) {
-        super(corePoolSize, maximumPoolSize, keepAliveTime, unit, workQueue, new NamedThreadFactory(threadFactory, prefix), handler);
+        //super(corePoolSize, maximumPoolSize, keepAliveTime, unit, workQueue, new NamedThreadFactory(threadFactory, prefix), handler);
+        super(corePoolSize, maximumPoolSize, keepAliveTime, unit, workQueue, EXECUTOR.getThreadFactory(), handler);
         if (optimize) {
             allowCoreThreadTimeOut(getKeepAliveTime(unit) > 0);
         }
