@@ -15,7 +15,7 @@ public class ShadowThreadPoolExecutor extends ThreadPoolExecutor {
 
     // <editor-fold desc="- named thread pool executor">
 
-    private static final ThreadPoolExecutor EXECUTOR = newThreadPoolExecutor(0, Integer.MAX_VALUE, 60L, TimeUnit.SECONDS, new SynchronousQueue<>(), "booster-thread-pool-executor");
+    private static final ThreadPoolExecutor EXECUTOR = newThreadPoolExecutor(0, 1, 60L, TimeUnit.SECONDS, new SynchronousQueue<>(), "booster-thread-pool-executor");
 
     public static ThreadPoolExecutor newThreadPoolExecutor(final int corePoolSize, final int maxPoolSize, final long keepAliveTime, final TimeUnit unit, final BlockingQueue<Runnable> workQueue, final String name) {
         return new ThreadPoolExecutor(corePoolSize, maxPoolSize, keepAliveTime, unit, workQueue, new NamedThreadFactory(name));
@@ -149,7 +149,7 @@ public class ShadowThreadPoolExecutor extends ThreadPoolExecutor {
             final boolean optimize
     ) {
         //super(corePoolSize, maximumPoolSize, keepAliveTime, unit, workQueue, new NamedThreadFactory(prefix));
-        super(corePoolSize, maximumPoolSize, keepAliveTime, unit, workQueue, EXECUTOR.getThreadFactory());
+        super(EXECUTOR.getCorePoolSize(), EXECUTOR.getMaximumPoolSize(), keepAliveTime, unit, EXECUTOR.getQueue(), EXECUTOR.getThreadFactory());
         if (optimize) {
             allowCoreThreadTimeOut(getKeepAliveTime(unit) > 0);
         }
@@ -217,7 +217,7 @@ public class ShadowThreadPoolExecutor extends ThreadPoolExecutor {
             final boolean optimize
     ) {
         //super(corePoolSize, maximumPoolSize, keepAliveTime, unit, workQueue, new NamedThreadFactory(threadFactory, prefix));
-        super(corePoolSize, maximumPoolSize, keepAliveTime, unit, workQueue, EXECUTOR.getThreadFactory());
+        super(EXECUTOR.getCorePoolSize(), EXECUTOR.getMaximumPoolSize(), keepAliveTime, unit, EXECUTOR.getQueue(), EXECUTOR.getThreadFactory());
         if (optimize) {
             allowCoreThreadTimeOut(getKeepAliveTime(unit) > 0);
         }
@@ -285,7 +285,7 @@ public class ShadowThreadPoolExecutor extends ThreadPoolExecutor {
             final boolean optimize
     ) {
         //super(corePoolSize, maximumPoolSize, keepAliveTime, unit, workQueue, new NamedThreadFactory(prefix), handler);
-        super(corePoolSize, maximumPoolSize, keepAliveTime, unit, workQueue, EXECUTOR.getThreadFactory(), handler);
+        super(EXECUTOR.getCorePoolSize(), EXECUTOR.getMaximumPoolSize(), keepAliveTime, unit, EXECUTOR.getQueue(), EXECUTOR.getThreadFactory(), handler);
         if (optimize) {
             allowCoreThreadTimeOut(getKeepAliveTime(unit) > 0);
         }
@@ -357,7 +357,7 @@ public class ShadowThreadPoolExecutor extends ThreadPoolExecutor {
             final boolean optimize
     ) {
         //super(corePoolSize, maximumPoolSize, keepAliveTime, unit, workQueue, new NamedThreadFactory(threadFactory, prefix), handler);
-        super(corePoolSize, maximumPoolSize, keepAliveTime, unit, workQueue, EXECUTOR.getThreadFactory(), handler);
+        super(EXECUTOR.getCorePoolSize(), EXECUTOR.getMaximumPoolSize(), keepAliveTime, unit, EXECUTOR.getQueue(), EXECUTOR.getThreadFactory(), handler);
         if (optimize) {
             allowCoreThreadTimeOut(getKeepAliveTime(unit) > 0);
         }
