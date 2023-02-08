@@ -195,14 +195,14 @@ public class ShadowExecutors {
     //<editor-fold desc="* optimized cached thread pool">
 
     public static ExecutorService newOptimizedCachedThreadPool(final String name) {
-        final ThreadPoolExecutor executor = new ThreadPoolExecutor(0, Integer.MAX_VALUE, 60L, TimeUnit.SECONDS, new SynchronousQueue<Runnable>(), new NamedThreadFactory(name));
-        executor.allowCoreThreadTimeOut(true);
+        //final ThreadPoolExecutor executor = new ThreadPoolExecutor(0, Integer.MAX_VALUE, 60L, TimeUnit.SECONDS, new SynchronousQueue<Runnable>(), new NamedThreadFactory(name));
+        //executor.allowCoreThreadTimeOut(true);
         return EXECUTOR;
     }
 
     public static ExecutorService newOptimizedCachedThreadPool(final ThreadFactory factory, final String name) {
-        final ThreadPoolExecutor executor = new ThreadPoolExecutor(0, Integer.MAX_VALUE, 60L, TimeUnit.SECONDS, new SynchronousQueue<Runnable>(), new NamedThreadFactory(factory, name));
-        executor.allowCoreThreadTimeOut(true);
+        //final ThreadPoolExecutor executor = new ThreadPoolExecutor(0, Integer.MAX_VALUE, 60L, TimeUnit.SECONDS, new SynchronousQueue<Runnable>(), new NamedThreadFactory(factory, name));
+        //executor.allowCoreThreadTimeOut(true);
         return EXECUTOR;
     }
 
