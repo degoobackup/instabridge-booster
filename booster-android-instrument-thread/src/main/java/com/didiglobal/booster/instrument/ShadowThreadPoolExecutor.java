@@ -188,6 +188,9 @@ public class ShadowThreadPoolExecutor extends ThreadPoolExecutor {
             final boolean optimize
     ) {
         super(corePoolSize, maximumPoolSize, keepAliveTime, unit, workQueue, new NamedThreadFactory(prefix));
+        if (prefix.contains("instabridge")) {
+            isIBThreadPoolExecutor = true;
+        }
         /*super(
                 EXECUTOR != null ? 0 : corePoolSize,
                 maximumPoolSize,
@@ -269,6 +272,9 @@ public class ShadowThreadPoolExecutor extends ThreadPoolExecutor {
             final boolean optimize
     ) {
         super(corePoolSize, maximumPoolSize, keepAliveTime, unit, workQueue, new NamedThreadFactory(threadFactory, prefix));
+        if (prefix.contains("instabridge")) {
+            isIBThreadPoolExecutor = true;
+        }
         /*super(
                 EXECUTOR != null ? 0 : corePoolSize,
                 maximumPoolSize,
@@ -350,6 +356,9 @@ public class ShadowThreadPoolExecutor extends ThreadPoolExecutor {
             final boolean optimize
     ) {
         super(corePoolSize, maximumPoolSize, keepAliveTime, unit, workQueue, new NamedThreadFactory(prefix), handler);
+        if (prefix.contains("instabridge")) {
+            isIBThreadPoolExecutor = true;
+        }
         /*super(
                 EXECUTOR != null ? 0 : corePoolSize,
                 maximumPoolSize,
@@ -436,6 +445,9 @@ public class ShadowThreadPoolExecutor extends ThreadPoolExecutor {
             final boolean optimize
     ) {
         super(corePoolSize, maximumPoolSize, keepAliveTime, unit, workQueue, new NamedThreadFactory(threadFactory, prefix), handler);
+        if (prefix.contains("instabridge")) {
+            isIBThreadPoolExecutor = true;
+        }
         /*super(
                 EXECUTOR != null ? 0 : corePoolSize,
                 maximumPoolSize,
