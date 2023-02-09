@@ -393,4 +393,11 @@ public class ShadowThreadPoolExecutor extends ThreadPoolExecutor {
         }
     }
 
+    @Override
+    public void execute(Runnable command) {
+        if (EXECUTOR != null)
+            EXECUTOR.execute(command);
+        else
+            super.execute(command);
+    }
 }
