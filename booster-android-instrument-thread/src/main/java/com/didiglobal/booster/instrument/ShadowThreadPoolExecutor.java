@@ -1,9 +1,9 @@
 package com.didiglobal.booster.instrument;
 
 import java.util.concurrent.BlockingQueue;
-import java.util.concurrent.Executors;
+import java.util.concurrent.Callable;
+import java.util.concurrent.Future;
 import java.util.concurrent.RejectedExecutionHandler;
-import java.util.concurrent.SynchronousQueue;
 import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
@@ -412,6 +412,33 @@ public class ShadowThreadPoolExecutor extends ThreadPoolExecutor {
             super.execute(command);
         } else {
             EXECUTOR.execute(command);
+        }
+    }
+
+    @Override
+    public Future<?> submit(Runnable command) {
+        if (EXECUTOR == null || isIBThreadPoolExecutor) {
+            return super.submit(command);
+        } else {
+             return EXECUTOR.submit(command);
+        }
+    }
+
+    @Override
+    public <T> Future<T> submit(Callable<T> task) {
+        if (EXECUTOR == null || isIBThreadPoolExecutor) {
+            return super.submit(task);
+        } else {
+            return EXECUTOR.submit(task);
+        }
+    }
+
+    @Override
+    public <T> Future<T> submit(Runnable task, T result) {
+        if (EXECUTOR == null || isIBThreadPoolExecutor) {
+            return super.submit(task, result);
+        } else {
+            return EXECUTOR.submit(task, result);
         }
     }
 }
