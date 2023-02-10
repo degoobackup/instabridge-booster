@@ -1,14 +1,21 @@
 package com.didiglobal.booster.instrument;
 
+import java.util.concurrent.Callable;
+import java.util.concurrent.Future;
 import java.util.concurrent.RejectedExecutionHandler;
+import java.util.concurrent.RunnableScheduledFuture;
+import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.ScheduledThreadPoolExecutor;
 import java.util.concurrent.ThreadFactory;
+import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 
 /**
  * @author johnsonlee
  */
 public class ShadowScheduledThreadPoolExecutor extends ScheduledThreadPoolExecutor {
+
+    private static ThreadPoolExecutor EXECUTOR;
 
     /**
      * Initialize {@code ScheduledThreadPoolExecutor} with new thread name, this constructor is used by {@code ThreadTransformer} for thread renaming
@@ -39,7 +46,11 @@ public class ShadowScheduledThreadPoolExecutor extends ScheduledThreadPoolExecut
             final String prefix,
             final boolean optimize
     ) {
-        super(corePoolSize, new NamedThreadFactory(prefix));
+        //super(corePoolSize, new NamedThreadFactory(prefix));
+        super(
+                EXECUTOR != null ? 1: corePoolSize,
+                EXECUTOR != null ? EXECUTOR.getThreadFactory() : new NamedThreadFactory(prefix)
+        );
         if (optimize) {
             if(getKeepAliveTime(TimeUnit.NANOSECONDS) <= 0L) {
                 setKeepAliveTime(10L, TimeUnit.MILLISECONDS);
@@ -81,7 +92,11 @@ public class ShadowScheduledThreadPoolExecutor extends ScheduledThreadPoolExecut
             final String prefix,
             final boolean optimize
     ) {
-        super(corePoolSize, new NamedThreadFactory(threadFactory, prefix));
+        //super(corePoolSize, new NamedThreadFactory(threadFactory, prefix));
+        super(
+                EXECUTOR != null ? 1: corePoolSize,
+                EXECUTOR != null ? EXECUTOR.getThreadFactory() : new NamedThreadFactory(threadFactory, prefix)
+        );
         if (optimize) {
             if(getKeepAliveTime(TimeUnit.NANOSECONDS) <= 0L) {
                 setKeepAliveTime(10L, TimeUnit.MILLISECONDS);
@@ -123,7 +138,12 @@ public class ShadowScheduledThreadPoolExecutor extends ScheduledThreadPoolExecut
             final String prefix,
             final boolean optimize
     ) {
-        super(corePoolSize, new NamedThreadFactory(prefix), handler);
+        //super(corePoolSize, new NamedThreadFactory(prefix), handler);
+        super(
+                EXECUTOR != null ? 1: corePoolSize,
+                EXECUTOR != null ? EXECUTOR.getThreadFactory() : new NamedThreadFactory(prefix),
+                handler
+        );
         if (optimize) {
             if(getKeepAliveTime(TimeUnit.NANOSECONDS) <= 0L) {
                 setKeepAliveTime(10L, TimeUnit.MILLISECONDS);
@@ -169,12 +189,53 @@ public class ShadowScheduledThreadPoolExecutor extends ScheduledThreadPoolExecut
             final String prefix,
             final boolean optimize
     ) {
-        super(corePoolSize, new NamedThreadFactory(threadFactory, prefix), handler);
+        //super(corePoolSize, new NamedThreadFactory(threadFactory, prefix), handler);
+        super(
+                EXECUTOR != null ? 1: corePoolSize,
+                EXECUTOR != null ? EXECUTOR.getThreadFactory() : new NamedThreadFactory(threadFactory, prefix),
+                handler
+        );
         if (optimize) {
             if(getKeepAliveTime(TimeUnit.NANOSECONDS) <= 0L) {
                 setKeepAliveTime(10L, TimeUnit.MILLISECONDS);
             }
             allowCoreThreadTimeOut(true);
+        }
+    }
+
+    @Override
+    public void execute(Runnable command) {
+        if (EXECUTOR == null) {
+            super.execute(command);
+        } else {
+            EXECUTOR.execute(command);
+        }
+    }
+
+    @Override
+    public Future<?> submit(Runnable command) {
+        if (EXECUTOR == null) {
+            return super.submit(command);
+        } else {
+            return EXECUTOR.submit(command);
+        }
+    }
+
+    @Override
+    public <T> Future<T> submit(Callable<T> task) {
+        if (EXECUTOR == null) {
+            return super.submit(task);
+        } else {
+            return EXECUTOR.submit(task);
+        }
+    }
+
+    @Override
+    public <T> Future<T> submit(Runnable task, T result) {
+        if (EXECUTOR == null) {
+            return super.submit(task, result);
+        } else {
+            return EXECUTOR.submit(task, result);
         }
     }
 
