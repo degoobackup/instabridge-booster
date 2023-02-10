@@ -186,11 +186,8 @@ public class ShadowThreadPoolExecutor extends ThreadPoolExecutor {
             final String prefix,
             final boolean optimize
     ) {
-        super(corePoolSize, maximumPoolSize, keepAliveTime, unit, workQueue, new NamedThreadFactory(prefix));
-        if (prefix.contains("instabridge")) {
-            isIBThreadPoolExecutor = true;
-        }
-        /*super(
+        //super(corePoolSize, maximumPoolSize, keepAliveTime, unit, workQueue, new NamedThreadFactory(prefix));
+        super(
                 EXECUTOR != null ? 0 : corePoolSize,
                 maximumPoolSize,
                 keepAliveTime,
@@ -270,11 +267,8 @@ public class ShadowThreadPoolExecutor extends ThreadPoolExecutor {
             final String prefix,
             final boolean optimize
     ) {
-        super(corePoolSize, maximumPoolSize, keepAliveTime, unit, workQueue, new NamedThreadFactory(threadFactory, prefix));
-        if (prefix.contains("instabridge")) {
-            isIBThreadPoolExecutor = true;
-        }
-        /*super(
+        //super(corePoolSize, maximumPoolSize, keepAliveTime, unit, workQueue, new NamedThreadFactory(threadFactory, prefix));
+        super(
                 EXECUTOR != null ? 0 : corePoolSize,
                 maximumPoolSize,
                 keepAliveTime,
@@ -354,11 +348,8 @@ public class ShadowThreadPoolExecutor extends ThreadPoolExecutor {
             final String prefix,
             final boolean optimize
     ) {
-        super(corePoolSize, maximumPoolSize, keepAliveTime, unit, workQueue, new NamedThreadFactory(prefix), handler);
-        if (prefix.contains("instabridge")) {
-            isIBThreadPoolExecutor = true;
-        }
-        /*super(
+        //super(corePoolSize, maximumPoolSize, keepAliveTime, unit, workQueue, new NamedThreadFactory(prefix), handler);
+        super(
                 EXECUTOR != null ? 0 : corePoolSize,
                 maximumPoolSize,
                 keepAliveTime,
@@ -443,11 +434,8 @@ public class ShadowThreadPoolExecutor extends ThreadPoolExecutor {
             final String prefix,
             final boolean optimize
     ) {
-        super(corePoolSize, maximumPoolSize, keepAliveTime, unit, workQueue, new NamedThreadFactory(threadFactory, prefix), handler);
-        if (prefix.contains("instabridge")) {
-            isIBThreadPoolExecutor = true;
-        }
-        /*super(
+        //super(corePoolSize, maximumPoolSize, keepAliveTime, unit, workQueue, new NamedThreadFactory(threadFactory, prefix), handler);
+        super(
                 EXECUTOR != null ? 0 : corePoolSize,
                 maximumPoolSize,
                 keepAliveTime,
