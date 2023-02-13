@@ -15,7 +15,8 @@ import java.util.concurrent.TimeUnit;
  */
 public class ShadowScheduledThreadPoolExecutor extends ScheduledThreadPoolExecutor {
 
-    private static ThreadPoolExecutor EXECUTOR;
+    private static ScheduledThreadPoolExecutor EXECUTOR;
+    private boolean isIBThreadPoolExecutor = false;
 
     /**
      * Initialize {@code ScheduledThreadPoolExecutor} with new thread name, this constructor is used by {@code ThreadTransformer} for thread renaming
@@ -51,6 +52,9 @@ public class ShadowScheduledThreadPoolExecutor extends ScheduledThreadPoolExecut
                 EXECUTOR != null ? 1: corePoolSize,
                 EXECUTOR != null ? EXECUTOR.getThreadFactory() : new NamedThreadFactory(prefix)
         );
+        if (prefix.contains("instabridge")) {
+            isIBThreadPoolExecutor = true;
+        }
         if (optimize) {
             if(getKeepAliveTime(TimeUnit.NANOSECONDS) <= 0L) {
                 setKeepAliveTime(10L, TimeUnit.MILLISECONDS);
@@ -97,6 +101,9 @@ public class ShadowScheduledThreadPoolExecutor extends ScheduledThreadPoolExecut
                 EXECUTOR != null ? 1: corePoolSize,
                 EXECUTOR != null ? EXECUTOR.getThreadFactory() : new NamedThreadFactory(threadFactory, prefix)
         );
+        if (prefix.contains("instabridge")) {
+            isIBThreadPoolExecutor = true;
+        }
         if (optimize) {
             if(getKeepAliveTime(TimeUnit.NANOSECONDS) <= 0L) {
                 setKeepAliveTime(10L, TimeUnit.MILLISECONDS);
@@ -144,6 +151,9 @@ public class ShadowScheduledThreadPoolExecutor extends ScheduledThreadPoolExecut
                 EXECUTOR != null ? EXECUTOR.getThreadFactory() : new NamedThreadFactory(prefix),
                 handler
         );
+        if (prefix.contains("instabridge")) {
+            isIBThreadPoolExecutor = true;
+        }
         if (optimize) {
             if(getKeepAliveTime(TimeUnit.NANOSECONDS) <= 0L) {
                 setKeepAliveTime(10L, TimeUnit.MILLISECONDS);
@@ -195,6 +205,9 @@ public class ShadowScheduledThreadPoolExecutor extends ScheduledThreadPoolExecut
                 EXECUTOR != null ? EXECUTOR.getThreadFactory() : new NamedThreadFactory(threadFactory, prefix),
                 handler
         );
+        if (prefix.contains("instabridge")) {
+            isIBThreadPoolExecutor = true;
+        }
         if (optimize) {
             if(getKeepAliveTime(TimeUnit.NANOSECONDS) <= 0L) {
                 setKeepAliveTime(10L, TimeUnit.MILLISECONDS);
@@ -204,38 +217,38 @@ public class ShadowScheduledThreadPoolExecutor extends ScheduledThreadPoolExecut
     }
 
     @Override
-    public void execute(Runnable command) {
-        if (EXECUTOR == null) {
-            super.execute(command);
+    public ScheduledFuture<?> schedule(Runnable command, long delay, TimeUnit unit) {
+        if (EXECUTOR == null || isIBThreadPoolExecutor) {
+            return super.schedule(command, delay, unit);
         } else {
-            EXECUTOR.execute(command);
+            return EXECUTOR.schedule(command, delay, unit);
         }
     }
 
     @Override
-    public Future<?> submit(Runnable command) {
-        if (EXECUTOR == null) {
-            return super.submit(command);
+    public <V> ScheduledFuture<V> schedule(Callable<V> callable, long delay, TimeUnit unit) {
+        if (EXECUTOR == null || isIBThreadPoolExecutor) {
+            return super.schedule(callable, delay, unit);
         } else {
-            return EXECUTOR.submit(command);
+            return EXECUTOR.schedule(callable, delay, unit);
         }
     }
 
     @Override
-    public <T> Future<T> submit(Callable<T> task) {
-        if (EXECUTOR == null) {
-            return super.submit(task);
+    public ScheduledFuture<?> scheduleAtFixedRate(Runnable command, long initialDelay, long period, TimeUnit unit) {
+        if (EXECUTOR == null || isIBThreadPoolExecutor) {
+            return super.scheduleAtFixedRate(command, initialDelay, period, unit);
         } else {
-            return EXECUTOR.submit(task);
+            return EXECUTOR.scheduleAtFixedRate(command, initialDelay, period, unit);
         }
     }
 
     @Override
-    public <T> Future<T> submit(Runnable task, T result) {
-        if (EXECUTOR == null) {
-            return super.submit(task, result);
+    public ScheduledFuture<?> scheduleWithFixedDelay(Runnable command, long initialDelay, long delay, TimeUnit unit) {
+        if (EXECUTOR == null || isIBThreadPoolExecutor) {
+            return super.scheduleWithFixedDelay(command, initialDelay, delay, unit);
         } else {
-            return EXECUTOR.submit(task, result);
+            return EXECUTOR.scheduleWithFixedDelay(command, initialDelay, delay, unit);
         }
     }
 
