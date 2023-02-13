@@ -5,6 +5,8 @@ import java.util.concurrent.atomic.AtomicInteger;
 
 import static com.didiglobal.booster.instrument.ShadowThread.setThreadName;
 
+import android.util.Log;
+
 public class NamedThreadFactory implements ThreadFactory {
 
     /**
@@ -59,7 +61,7 @@ public class NamedThreadFactory implements ThreadFactory {
 
             return t;
         }
-
+        Log.d("ThreadFactor.newThread", this.name);
         return setThreadName(this.factory.newThread(r), this.name);
     }
 
