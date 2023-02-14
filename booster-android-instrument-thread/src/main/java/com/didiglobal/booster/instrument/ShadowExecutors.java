@@ -107,11 +107,11 @@ public class ShadowExecutors {
     // <editor-fold desc="- named single thread scheduled executor">
 
     public static ScheduledExecutorService newSingleThreadScheduledExecutor(final String name) {
-        return SCHEDULED_EXECUTOR;
+        return Executors.newSingleThreadScheduledExecutor(new NamedThreadFactory(name));
     }
 
     public static ScheduledExecutorService newSingleThreadScheduledExecutor(final ThreadFactory factory, final String name) {
-        return SCHEDULED_EXECUTOR;
+        return Executors.newSingleThreadScheduledExecutor(new NamedThreadFactory(factory, name));
     }
 
     // </editor-fold>
@@ -119,11 +119,11 @@ public class ShadowExecutors {
     // <editor-fold desc="- named scheduled thread pool">
 
     public static ScheduledExecutorService newScheduledThreadPool(final int corePoolSize, final String name) {
-        return SCHEDULED_EXECUTOR;
+        return Executors.newScheduledThreadPool(corePoolSize, new NamedThreadFactory(name));
     }
 
     public static ScheduledExecutorService newScheduledThreadPool(final int corePoolSize, final ThreadFactory factory, final String name) {
-        return SCHEDULED_EXECUTOR;
+        return Executors.newScheduledThreadPool(corePoolSize, new NamedThreadFactory(factory, name));
     }
 
     // </editor-fold>
@@ -161,17 +161,17 @@ public class ShadowExecutors {
     // <editor-fold desc="* optimized single thread scheduled executor">
 
     public static ScheduledExecutorService newOptimizedSingleThreadScheduledExecutor(final String name) {
-        //final ScheduledThreadPoolExecutor executor = new ScheduledThreadPoolExecutor(1, new NamedThreadFactory(name));
-        //executor.setKeepAliveTime(DEFAULT_KEEP_ALIVE, TimeUnit.MILLISECONDS);
-        //executor.allowCoreThreadTimeOut(true);
-        return SCHEDULED_EXECUTOR;
+        final ScheduledThreadPoolExecutor executor = new ScheduledThreadPoolExecutor(1, new NamedThreadFactory(name));
+        executor.setKeepAliveTime(DEFAULT_KEEP_ALIVE, TimeUnit.MILLISECONDS);
+        executor.allowCoreThreadTimeOut(true);
+        return executor;
     }
 
     public static ScheduledExecutorService newOptimizedSingleThreadScheduledExecutor(final ThreadFactory factory, final String name) {
-        //final ScheduledThreadPoolExecutor executor = new ScheduledThreadPoolExecutor(1, new NamedThreadFactory(factory, name));
-        //executor.setKeepAliveTime(DEFAULT_KEEP_ALIVE, TimeUnit.MILLISECONDS);
-        //executor.allowCoreThreadTimeOut(true);
-        return SCHEDULED_EXECUTOR;
+        final ScheduledThreadPoolExecutor executor = new ScheduledThreadPoolExecutor(1, new NamedThreadFactory(factory, name));
+        executor.setKeepAliveTime(DEFAULT_KEEP_ALIVE, TimeUnit.MILLISECONDS);
+        executor.allowCoreThreadTimeOut(true);
+        return executor;
     }
 
     // </editor-fold>
@@ -179,17 +179,17 @@ public class ShadowExecutors {
     // <editor-fold desc="* optimized scheduled thread pool">
 
     public static ScheduledExecutorService newOptimizedScheduledThreadPool(final int corePoolSize, final String name) {
-        //final ScheduledThreadPoolExecutor executor = new ScheduledThreadPoolExecutor(min(max(1, corePoolSize), MAX_POOL_SIZE), new NamedThreadFactory(name));
-        //executor.setKeepAliveTime(DEFAULT_KEEP_ALIVE, TimeUnit.MILLISECONDS);
-        //executor.allowCoreThreadTimeOut(true);
-        return SCHEDULED_EXECUTOR;
+        final ScheduledThreadPoolExecutor executor = new ScheduledThreadPoolExecutor(min(max(1, corePoolSize), MAX_POOL_SIZE), new NamedThreadFactory(name));
+        executor.setKeepAliveTime(DEFAULT_KEEP_ALIVE, TimeUnit.MILLISECONDS);
+        executor.allowCoreThreadTimeOut(true);
+        return executor;
     }
 
     public static ScheduledExecutorService newOptimizedScheduledThreadPool(final int corePoolSize, final ThreadFactory factory, final String name) {
-        //final ScheduledThreadPoolExecutor executor = new ScheduledThreadPoolExecutor(min(max(1, corePoolSize), MAX_POOL_SIZE), new NamedThreadFactory(factory, name));
-        //executor.setKeepAliveTime(DEFAULT_KEEP_ALIVE, TimeUnit.MILLISECONDS);
-        //executor.allowCoreThreadTimeOut(true);
-        return SCHEDULED_EXECUTOR;
+        final ScheduledThreadPoolExecutor executor = new ScheduledThreadPoolExecutor(min(max(1, corePoolSize), MAX_POOL_SIZE), new NamedThreadFactory(factory, name));
+        executor.setKeepAliveTime(DEFAULT_KEEP_ALIVE, TimeUnit.MILLISECONDS);
+        executor.allowCoreThreadTimeOut(true);
+        return executor;
     }
 
     // </editor-fold>
