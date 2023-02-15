@@ -65,7 +65,7 @@ public class ShadowThread extends Thread {
      * @param prefix the new name
      */
     public ShadowThread(final String prefix) {
-        super(makeThreadName(prefix));
+        super(null, null, makeThreadName(prefix), adjustStackSize(null, prefix));
     }
 
     /**
@@ -76,7 +76,7 @@ public class ShadowThread extends Thread {
      * @param prefix the new name
      */
     public ShadowThread(final Runnable target, final String prefix) {
-        super(target, makeThreadName(prefix));
+        super(null, target, makeThreadName(prefix), adjustStackSize(null, prefix));
     }
 
     /**
@@ -88,7 +88,7 @@ public class ShadowThread extends Thread {
      * @param prefix the new name
      */
     public ShadowThread(final ThreadGroup group, final Runnable target, final String prefix) {
-        super(group, target, makeThreadName(prefix));
+        super(group, target, makeThreadName(prefix), adjustStackSize(null, prefix));
     }
 
     /**
@@ -98,7 +98,7 @@ public class ShadowThread extends Thread {
      * @param prefix the prefix of new name
      */
     public ShadowThread(final String name, final String prefix) {
-        super(makeThreadName(name, prefix));
+        super(null, null, makeThreadName(name, prefix), adjustStackSize(name, prefix));
     }
 
     /**
@@ -109,7 +109,7 @@ public class ShadowThread extends Thread {
      * @param prefix the prefix of new name
      */
     public ShadowThread(final ThreadGroup group, final String name, final String prefix) {
-        super(group, makeThreadName(name, prefix));
+        super(group, null, makeThreadName(name, prefix), adjustStackSize(name, prefix));
     }
 
     /**
@@ -121,7 +121,7 @@ public class ShadowThread extends Thread {
      * @param prefix the prefix of new name
      */
     public ShadowThread(final Runnable target, final String name, final String prefix) {
-        super(target, makeThreadName(name, prefix));
+        super(null, target, makeThreadName(name, prefix), adjustStackSize(name, prefix));
     }
 
     /**
@@ -134,7 +134,7 @@ public class ShadowThread extends Thread {
      * @param prefix the prefix of new name
      */
     public ShadowThread(final ThreadGroup group, final Runnable target, final String name, final String prefix) {
-        super(group, target, makeThreadName(name, prefix));
+        super(group, target, makeThreadName(name, prefix), adjustStackSize(name, prefix));
     }
 
     /**
@@ -149,6 +149,17 @@ public class ShadowThread extends Thread {
      */
     public ShadowThread(final ThreadGroup group, final Runnable target, final String name, final long stackSize, final String prefix) {
         super(group, target, makeThreadName(name, prefix), stackSize);
+    }
+
+    private static long adjustStackSize(String name, String prefix) {
+        if (prefix != null && !prefix.contains("instabridge")) {
+            return 256 * 1024;
+        }
+        if (name != null && !name.startsWith("ib-pool")) {
+            return 256 * 1024;
+        }
+        // Use default stack size
+        return 0;
     }
 
 }
