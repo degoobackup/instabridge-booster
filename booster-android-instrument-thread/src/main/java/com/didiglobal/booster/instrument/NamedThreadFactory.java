@@ -61,7 +61,7 @@ public class NamedThreadFactory implements ThreadFactory {
 
             return t;
         }
-        Log.d("ThreadFactor.newThread", this.name);
+        //Log.d("ThreadFactor.newThread", this.name);
         return setThreadName(this.factory.newThread(r), this.name);
     }
 
