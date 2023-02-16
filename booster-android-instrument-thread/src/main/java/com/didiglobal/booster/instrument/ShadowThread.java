@@ -50,12 +50,12 @@ public class ShadowThread extends Thread {
     }
 
     public static String makeThreadName(final String name) {
-        Log.d("ShadowThread.makeThreadName", name);
+        //Log.d("ShadowThread.makeThreadName", name);
         return name == null ? "" : name.startsWith(MARK) ? name : (MARK + name);
     }
 
     public static String makeThreadName(final String name, final String prefix) {
-        Log.d("ShadowThread.makeThreadName", prefix + "#" + name);
+        //Log.d("ShadowThread.makeThreadName", prefix + "#" + name);
         return name == null ? prefix : (name.startsWith(MARK) ? name : (prefix + "#" + name));
     }
 
