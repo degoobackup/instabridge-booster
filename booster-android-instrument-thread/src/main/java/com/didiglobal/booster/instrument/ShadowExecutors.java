@@ -34,8 +34,7 @@ public class ShadowExecutors {
 
     private static final int NCPU = Runtime.getRuntime().availableProcessors();
 
-    private static final ExecutorService EXECUTOR = Executors.newCachedThreadPool();
-    private static final ScheduledExecutorService SCHEDULED_EXECUTOR = Executors.newScheduledThreadPool(1);
+    private static ExecutorService EXECUTOR;
 
     /**
      * The maximum pool size
@@ -54,11 +53,17 @@ public class ShadowExecutors {
     // <editor-fold desc="- named fixed thread pool">
 
     public static ExecutorService newFixedThreadPool(final int nThreads, final String name) {
-        return EXECUTOR;
+        if (EXECUTOR != null) {
+            return EXECUTOR;
+        }
+        return Executors.newFixedThreadPool(nThreads, new NamedThreadFactory(name));
     }
 
     public static ExecutorService newFixedThreadPool(final int nThreads, final ThreadFactory factory, final String name) {
-        return EXECUTOR;
+        if (EXECUTOR != null) {
+            return EXECUTOR;
+        }
+        return Executors.newFixedThreadPool(nThreads, new NamedThreadFactory(factory, name));
     }
 
     // </editor-fold>
@@ -66,11 +71,17 @@ public class ShadowExecutors {
     // <editor-fold desc="- named single thread executor">
 
     public static ExecutorService newSingleThreadExecutor(final String name) {
-        return EXECUTOR;
+        if (EXECUTOR != null) {
+            return EXECUTOR;
+        }
+        return Executors.newSingleThreadExecutor(new NamedThreadFactory(name));
     }
 
     public static ExecutorService newSingleThreadExecutor(final ThreadFactory factory, final String name) {
-        return EXECUTOR;
+        if (EXECUTOR != null) {
+            return EXECUTOR;
+        }
+        return Executors.newSingleThreadExecutor(new NamedThreadFactory(factory, name));
     }
 
     // </editor-fold>
@@ -78,11 +89,17 @@ public class ShadowExecutors {
     // <editor-fold desc="- named cached thread pool">
 
     public static ExecutorService newCachedThreadPool(final String name) {
-        return EXECUTOR;
+        if (EXECUTOR != null) {
+            return EXECUTOR;
+        }
+        return Executors.newCachedThreadPool(new NamedThreadFactory(name));
     }
 
     public static ExecutorService newCachedThreadPool(final ThreadFactory factory, final String name) {
-        return EXECUTOR;
+        if (EXECUTOR != null) {
+            return EXECUTOR;
+        }
+        return Executors.newCachedThreadPool(new NamedThreadFactory(factory, name));
     }
 
     // </editor-fold>
@@ -126,11 +143,17 @@ public class ShadowExecutors {
     // <editor-fold desc="- optimized fixed thread pool">
 
     public static ExecutorService newOptimizedFixedThreadPool(final int nThreads, final String name) {
-        return EXECUTOR;
+        if (EXECUTOR != null) {
+            return EXECUTOR;
+        }
+        return Executors.newFixedThreadPool(nThreads, new NamedThreadFactory(name));
     }
 
     public static ExecutorService newOptimizedFixedThreadPool(final int nThreads, final ThreadFactory factory, final String name) {
-        return EXECUTOR;
+        if (EXECUTOR != null) {
+            return EXECUTOR;
+        }
+        return Executors.newFixedThreadPool(nThreads, new NamedThreadFactory(factory, name));
     }
 
     // </editor-fold>
@@ -174,7 +197,7 @@ public class ShadowExecutors {
     // <editor-fold desc="* optimized single thread executor">
 
     public static ExecutorService newOptimizedSingleThreadExecutor(final String name) {
-        if (name.contains("mozilla")) {
+        if (EXECUTOR == null || name.contains("mozilla")) {
             final ThreadPoolExecutor executor = new ThreadPoolExecutor(0, 1, DEFAULT_KEEP_ALIVE, TimeUnit.MILLISECONDS, new LinkedBlockingQueue<Runnable>(), new NamedThreadFactory(name));
             executor.allowCoreThreadTimeOut(true);
             return executor;
@@ -183,7 +206,7 @@ public class ShadowExecutors {
     }
 
     public static ExecutorService newOptimizedSingleThreadExecutor(final ThreadFactory factory, final String name) {
-        if (name.contains("mozilla")) {
+        if (EXECUTOR == null || name.contains("mozilla")) {
             final ThreadPoolExecutor executor = new ThreadPoolExecutor(0, 1, DEFAULT_KEEP_ALIVE, TimeUnit.MILLISECONDS, new LinkedBlockingQueue<Runnable>(), new NamedThreadFactory(factory, name));
             executor.allowCoreThreadTimeOut(true);
             return executor;
@@ -196,15 +219,21 @@ public class ShadowExecutors {
     //<editor-fold desc="* optimized cached thread pool">
 
     public static ExecutorService newOptimizedCachedThreadPool(final String name) {
-        //final ThreadPoolExecutor executor = new ThreadPoolExecutor(0, Integer.MAX_VALUE, 60L, TimeUnit.SECONDS, new SynchronousQueue<Runnable>(), new NamedThreadFactory(name));
-        //executor.allowCoreThreadTimeOut(true);
-        return EXECUTOR;
+        if (EXECUTOR != null) {
+            return EXECUTOR;
+        }
+        final ThreadPoolExecutor executor = new ThreadPoolExecutor(0, Integer.MAX_VALUE, 60L, TimeUnit.SECONDS, new SynchronousQueue<Runnable>(), new NamedThreadFactory(name));
+        executor.allowCoreThreadTimeOut(true);
+        return executor;
     }
 
     public static ExecutorService newOptimizedCachedThreadPool(final ThreadFactory factory, final String name) {
-        //final ThreadPoolExecutor executor = new ThreadPoolExecutor(0, Integer.MAX_VALUE, 60L, TimeUnit.SECONDS, new SynchronousQueue<Runnable>(), new NamedThreadFactory(factory, name));
-        //executor.allowCoreThreadTimeOut(true);
-        return EXECUTOR;
+        if (EXECUTOR != null) {
+            return EXECUTOR;
+        }
+        final ThreadPoolExecutor executor = new ThreadPoolExecutor(0, Integer.MAX_VALUE, 60L, TimeUnit.SECONDS, new SynchronousQueue<Runnable>(), new NamedThreadFactory(factory, name));
+        executor.allowCoreThreadTimeOut(true);
+        return executor;
     }
 
     //</editor-fold>
