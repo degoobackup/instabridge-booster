@@ -31,14 +31,14 @@ public final class BoosterSharedPreferences implements SharedPreferences {
     private final Map<OnSharedPreferenceChangeListener, Object> mListeners = Collections.synchronizedMap(new WeakHashMap<>());
     private final Object mLock = new Object();
     private final Object mLoadLock = new Object();
-    //private final ExecutorService mWriteExecutor;
+    private final ExecutorService mWriteExecutor;
     private final SharedPreferencesManager mManager;
 
     private volatile boolean mLoaded = false;
     private final Map<String, Object> mKeyValueMap = new ConcurrentHashMap<>();
 
     private BoosterSharedPreferences(final Context context, final String name) {
-        //mWriteExecutor = ShadowExecutors.newOptimizedSingleThreadExecutor(name);
+        mWriteExecutor = ShadowExecutors.newOptimizedSingleThreadExecutor(name);
         mManager = new SharedPreferencesManager(context, name);
         startLoadFromDisk();
     }
@@ -272,7 +272,7 @@ public final class BoosterSharedPreferences implements SharedPreferences {
             }
             mKeyValueMap.clear();
             mKeyValueMap.putAll(mapToWriteToDisk);
-            SYNC_EXECUTOR.execute(new SyncTask(hasListeners, modifiedKeys, mapToWriteToDisk));
+            mWriteExecutor.execute(new SyncTask(hasListeners, modifiedKeys, mapToWriteToDisk));
         }
 
         private class SyncTask implements Runnable {
