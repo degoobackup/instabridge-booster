@@ -7,11 +7,13 @@ import android.os.Handler;
 import android.os.Looper;
 import android.util.Log;
 
+import androidx.appcompat.app.AlertDialog;
+
 
 /**
  * @author johnsonlee
  */
-public class ShadowDialog extends Dialog {
+public class ShadowDialog extends AlertDialog {
 
     private Handler mainThreadHandler;
 
@@ -29,12 +31,6 @@ public class ShadowDialog extends Dialog {
 
     public ShadowDialog(final Context context, final boolean cancelable, final DialogInterface.OnCancelListener cancelListener) {
         super(context, cancelable, cancelListener);
-        mainThreadHandler = new Handler(Looper.getMainLooper());
-        Log.d("ShadowDialog", "create");
-    }
-
-    public ShadowDialog(final Context context, final int themeResId, final boolean cancelable, final DialogInterface.OnCancelListener cancelListener) {
-        super(context, themeResId, cancelable, cancelListener);
         mainThreadHandler = new Handler(Looper.getMainLooper());
         Log.d("ShadowDialog", "create");
     }
