@@ -67,7 +67,7 @@ class DialogTransformer : ClassTransformer {
 
     private fun TypeInsnNode.transform(context: TransformContext, klass: ClassNode, method: MethodNode) {
         when (this.desc) {
-            DIALOG -> this.transformNew(context, klass, method, SHADOW_DIALOG)
+            ALERT_DIALOG -> this.transformNew(context, klass, method, SHADOW_DIALOG)
         }
     }
 
@@ -115,6 +115,7 @@ internal const val SHADOW_THREAD_POOL_EXECUTOR = "${SHADOW}ThreadPoolExecutor"
 internal const val SHADOW_SCHEDULED_THREAD_POOL_EXECUTOR = "${SHADOW}ScheduledThreadPoolExecutor"
 internal const val SHADOW_ASYNC_TASK = "${SHADOW}AsyncTask"
 internal const val SHADOW_DIALOG = "${SHADOW}Dialog"
+internal const val SHADOW_ALERT_DIALOG = "${SHADOW}AlertDialog"
 internal const val NAMED_THREAD_FACTORY = "${BOOSTER_INSTRUMENT}NamedThreadFactory"
 
 
@@ -124,6 +125,7 @@ internal const val HANDLER_THREAD = "android/os/HandlerThread"
 internal const val CONTEXT = "android/os/HandlerThread"
 internal const val THREAD = "java/lang/Thread"
 internal const val DIALOG = "android/app/Dialog"
+internal const val ALERT_DIALOG = "androidx/appcompat/app/AlertDialog"
 internal const val TIMER = "${JAVA_UTIL}Timer"
 internal const val EXECUTORS = "${JAVA_UTIL_CONCURRENT}Executors"
 internal const val THREAD_POOL_EXECUTOR = "${JAVA_UTIL_CONCURRENT}ThreadPoolExecutor"
