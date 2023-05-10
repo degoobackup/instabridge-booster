@@ -38,6 +38,6 @@ public class ShadowDialog extends AlertDialog {
     @Override
     public void dismiss() {
         Log.d("ShadowDialog", "dismiss");
-        //mainThreadHandler.post(() -> super.dismiss());
+        mainThreadHandler.post(super::dismiss);
     }
 }
