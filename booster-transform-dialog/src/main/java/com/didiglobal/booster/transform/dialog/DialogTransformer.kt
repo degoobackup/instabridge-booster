@@ -23,9 +23,9 @@ import java.io.PrintWriter
 import javax.xml.parsers.SAXParserFactory
 
 /**
- * Represents a class transformer for multithreading optimization
+ * Represents a class transformer for dialogs
  *
- * @author johnsonlee
+ * @author Daniel Olsson
  */
 @AutoService(ClassTransformer::class)
 class DialogTransformer : ClassTransformer {
@@ -67,7 +67,8 @@ class DialogTransformer : ClassTransformer {
 
     private fun TypeInsnNode.transform(context: TransformContext, klass: ClassNode, method: MethodNode) {
         when (this.desc) {
-            ALERT_DIALOG -> this.transformNew(context, klass, method, SHADOW_DIALOG)
+            ALERT_DIALOG -> this.transformNew(context, klass, method, SHADOW_ALERT_DIALOG)
+            APP_COMPAT_DIALOG -> this.transformNew(context, klass, method, SHADOW_APP_COMPAT_DIALOG)
         }
     }
 
@@ -94,39 +95,14 @@ class DialogTransformer : ClassTransformer {
 
 }
 
-private fun makeThreadName(name: String) = MARK + name
-
-private val ClassNode.defaultClinit: MethodNode
-    get() = MethodNode(Opcodes.ACC_STATIC, "<clinit>", "()V", null, null).apply {
-        maxStack = 1
-        instructions.add(InsnNode(Opcodes.RETURN))
-    }
-
-
 internal const val MARK = "\u200B"
 
 internal const val BOOSTER_INSTRUMENT = "com/didiglobal/booster/instrument/"
 internal const val SHADOW = "${BOOSTER_INSTRUMENT}Shadow"
-internal const val SHADOW_HANDLER_THREAD = "${SHADOW}HandlerThread"
-internal const val SHADOW_THREAD = "${SHADOW}Thread"
-internal const val SHADOW_TIMER = "${SHADOW}Timer"
-internal const val SHADOW_EXECUTORS = "${SHADOW}Executors"
-internal const val SHADOW_THREAD_POOL_EXECUTOR = "${SHADOW}ThreadPoolExecutor"
-internal const val SHADOW_SCHEDULED_THREAD_POOL_EXECUTOR = "${SHADOW}ScheduledThreadPoolExecutor"
-internal const val SHADOW_ASYNC_TASK = "${SHADOW}AsyncTask"
 internal const val SHADOW_DIALOG = "${SHADOW}Dialog"
 internal const val SHADOW_ALERT_DIALOG = "${SHADOW}AlertDialog"
-internal const val NAMED_THREAD_FACTORY = "${BOOSTER_INSTRUMENT}NamedThreadFactory"
+internal const val SHADOW_APP_COMPAT_DIALOG = "${SHADOW}AppCompatDialog"
 
-
-internal const val JAVA_UTIL = "java/util/"
-internal const val JAVA_UTIL_CONCURRENT = "${JAVA_UTIL}concurrent/"
-internal const val HANDLER_THREAD = "android/os/HandlerThread"
-internal const val CONTEXT = "android/os/HandlerThread"
-internal const val THREAD = "java/lang/Thread"
 internal const val DIALOG = "android/app/Dialog"
 internal const val ALERT_DIALOG = "androidx/appcompat/app/AlertDialog"
-internal const val TIMER = "${JAVA_UTIL}Timer"
-internal const val EXECUTORS = "${JAVA_UTIL_CONCURRENT}Executors"
-internal const val THREAD_POOL_EXECUTOR = "${JAVA_UTIL_CONCURRENT}ThreadPoolExecutor"
-internal const val SCHEDULED_THREAD_POOL_EXECUTOR = "${JAVA_UTIL_CONCURRENT}ScheduledThreadPoolExecutor"
+internal const val APP_COMPAT_DIALOG = "androidx/appcompat/app/AppCompatDialog"
