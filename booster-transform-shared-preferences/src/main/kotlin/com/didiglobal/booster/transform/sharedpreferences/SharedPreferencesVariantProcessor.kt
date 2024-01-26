@@ -4,6 +4,7 @@ import com.android.build.api.variant.DynamicFeatureVariantBuilder
 import com.android.build.api.variant.LibraryVariantBuilder
 import com.android.build.api.variant.VariantBuilder
 import com.didiglobal.booster.task.spi.VariantProcessor
+import com.didiglobal.booster.transform.shared.preferences.Build
 import com.didiglobal.booster.transform.shared.preferences.Build.GROUP
 import com.didiglobal.booster.transform.shared.preferences.Build.VERSION
 import com.google.auto.service.AutoService
@@ -19,7 +20,6 @@ class SharedPreferencesVariantProcessor(private val project: Project) : VariantP
         if (variantBuilder is LibraryVariantBuilder || variantBuilder is DynamicFeatureVariantBuilder) {
             return
         }
-        project.dependencies.add("${variantBuilder.name}Implementation", "com.github.degoobackup.instabridge-booster:booster-android-instrument-shared-preferences:${Build.VERSION}")
+        project.dependencies.add("${variantBuilder.name}Implementation", "com.github.degoobackup.instabridge-booster:booster-android-instrument-shared-preferences:${VERSION}")
     }
-
 }
