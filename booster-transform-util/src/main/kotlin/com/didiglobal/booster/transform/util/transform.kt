@@ -139,6 +139,7 @@ private val JAR_SIGNATURE_EXTENSIONS = setOf("SF", "RSA", "DSA", "EC")
 
 private fun isJarSignatureRelatedFiles(name: String): Boolean {
     return name.startsWith("META-INF/") && name.substringAfterLast('.') in JAR_SIGNATURE_EXTENSIONS
+            || name.startsWith("org/bouncycastle/")
 }
 
 private const val DEFAULT_BUFFER_SIZE = 8 * 1024
