@@ -1,3 +1,28 @@
+## v4.16.3
+
+- Support AGP 7.4
+- Fix issue [#422](https://github.com/didi/booster/pull/422) end-of-stream caused by multiple collector
+
+## v4.14.2
+
+- Fix issue [#422](https://github.com/didi/booster/pull/422) end-of-stream caused by multiple collector
+
+## v4.14.1
+
+- Sync from 4.16.2
+- Exclude AGP 7.3 and Kotlin API version 1.5.0 upgrading
+
+## v4.16.2
+
+- Fix `Project.getJarTaskProviders(BaseVariant?)` with projects do not have `android` extension
+- Add extension `BaseVariant.localAndroidResources`
+- Fix `AndroidSdk.findPlatform()`: Ignore Android SDK extension
+
+## v4.16.1
+
+- Fix issue [#406](https://github.com/didi/booster/issues/406) : incremental build with jar removal
+- Fix issue [#407](https://github.com/didi/booster/issues/407) : Apple M1 chipset support for cwebp
+
 ## v4.15.0
 
 - Fix issue [#381](https://github.com/didi/booster/issues/381)
@@ -5,8 +30,6 @@
 - Upgrade Kotlin API version to 1.5.0
 - Support AGP 7.3
 - Fix integration tests
-
-## v4.14.0
 
 - CHA improvement
 
