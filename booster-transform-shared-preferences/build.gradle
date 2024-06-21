@@ -7,3 +7,4 @@ dependencies {
     compileOnly 'com.android.tools.build:gradle:8.0.0'
     testCompileOnly 'com.android.tools.build:gradle:8.0.0'
 }
+
