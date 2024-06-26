@@ -297,7 +297,7 @@ public final class BoosterSharedPreferences implements SharedPreferences {
 
             private void notifyListeners(final Collection<String> keys) {
                 if (Looper.myLooper() == Looper.getMainLooper()) {
-                    final OnSharedPreferenceChangeListener[] listeners = mListeners.keySet().toArray(new OnSharedPreferenceChangeListener[0]);
+                    final OnSharedPreferenceChangeListener[] listeners = getKeysCopy();
                     for (final OnSharedPreferenceChangeListener listener : listeners) {
                         for (String key : keys) {
                             listener.onSharedPreferenceChanged(BoosterSharedPreferences.this, key);
@@ -312,6 +312,12 @@ public final class BoosterSharedPreferences implements SharedPreferences {
                     });
                 }
 
+            }
+
+            private OnSharedPreferenceChangeListener[] getKeysCopy() {
+                synchronized (mListeners) {
+                    return mListeners.keySet().toArray(new OnSharedPreferenceChangeListener[0]);
+                }
             }
         }
     }
