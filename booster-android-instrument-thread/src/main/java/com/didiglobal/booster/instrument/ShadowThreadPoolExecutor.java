@@ -214,6 +214,9 @@ public class ShadowThreadPoolExecutor extends ThreadPoolExecutor {
         );
         if (shouldExcludeThreadPool(prefix)) {
             isExcludedThreadPool = true;
+            if (!prefix.contains("instabridge")) {
+                this.setThreadFactory(new NamedThreadFactory(prefix));
+            }
         }
         if (optimize) {
             allowCoreThreadTimeOut(getKeepAliveTime(unit) > 0);
@@ -292,6 +295,9 @@ public class ShadowThreadPoolExecutor extends ThreadPoolExecutor {
         );
         if (shouldExcludeThreadPool(prefix)) {
             isExcludedThreadPool = true;
+            if (!prefix.contains("instabridge")) {
+                this.setThreadFactory(new NamedThreadFactory(threadFactory, prefix));
+            }
         }
         if (optimize) {
             allowCoreThreadTimeOut(getKeepAliveTime(unit) > 0);
@@ -371,6 +377,9 @@ public class ShadowThreadPoolExecutor extends ThreadPoolExecutor {
         );
         if (shouldExcludeThreadPool(prefix)) {
             isExcludedThreadPool = true;
+            if (!prefix.contains("instabridge")) {
+                this.setThreadFactory(new NamedThreadFactory(prefix));
+            }
         }
         if (optimize) {
             allowCoreThreadTimeOut(getKeepAliveTime(unit) > 0);
@@ -454,6 +463,9 @@ public class ShadowThreadPoolExecutor extends ThreadPoolExecutor {
         );
         if (shouldExcludeThreadPool(prefix)) {
             isExcludedThreadPool = true;
+            if (!prefix.contains("instabridge")) {
+                this.setThreadFactory(new NamedThreadFactory(threadFactory, prefix));
+            }
         }
         if (optimize) {
             allowCoreThreadTimeOut(getKeepAliveTime(unit) > 0);
