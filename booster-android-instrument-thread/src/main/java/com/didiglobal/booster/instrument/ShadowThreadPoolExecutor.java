@@ -1,5 +1,6 @@
 package com.didiglobal.booster.instrument;
 
+import java.util.HashSet;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.Callable;
 import java.util.concurrent.Future;
@@ -16,8 +17,24 @@ public class ShadowThreadPoolExecutor extends ThreadPoolExecutor {
     // <editor-fold desc="- named thread pool executor">
 
     private static ThreadPoolExecutor EXECUTOR;
-    private boolean isIBThreadPoolExecutor = false;
-    private boolean isOkHttpThreadPoolExecutor = false;
+
+    // Excluded thread pools from being replaced by the shadow threadpool
+    private HashSet<String> excludedThreadpools = new HashSet<String>() {{
+        add("instabridge"); // Prevent infinite recursion
+        add("okhttp");
+        add("mbridge");
+        add("mintegral");
+        add("fyber");
+    }};
+    private boolean isExcludedThreadPool = false;
+    private boolean shouldExcludeThreadPool(String name) {
+        for (String excluded : excludedThreadpools) {
+            if (name.contains(excluded)) {
+                return true;
+            }
+        }
+        return false;
+    }
 
     public static ThreadPoolExecutor newThreadPoolExecutor(final int corePoolSize, final int maxPoolSize, final long keepAliveTime, final TimeUnit unit, final BlockingQueue<Runnable> workQueue, final String name) {
         if (EXECUTOR != null) {
@@ -195,11 +212,8 @@ public class ShadowThreadPoolExecutor extends ThreadPoolExecutor {
                 workQueue,
                 EXECUTOR != null ? EXECUTOR.getThreadFactory() : new NamedThreadFactory(prefix)
         );
-        if (prefix.contains("instabridge")) {
-            isIBThreadPoolExecutor = true;
-        }
-        if (prefix.contains("okhttp")) {
-            isOkHttpThreadPoolExecutor = true;
+        if (shouldExcludeThreadPool(prefix)) {
+            isExcludedThreadPool = true;
         }
         if (optimize) {
             allowCoreThreadTimeOut(getKeepAliveTime(unit) > 0);
@@ -276,11 +290,8 @@ public class ShadowThreadPoolExecutor extends ThreadPoolExecutor {
                 workQueue,
                 EXECUTOR != null ? EXECUTOR.getThreadFactory() : new NamedThreadFactory(threadFactory, prefix)
         );
-        if (prefix.contains("instabridge")) {
-            isIBThreadPoolExecutor = true;
-        }
-        if (prefix.contains("okhttp")) {
-            isOkHttpThreadPoolExecutor = true;
+        if (shouldExcludeThreadPool(prefix)) {
+            isExcludedThreadPool = true;
         }
         if (optimize) {
             allowCoreThreadTimeOut(getKeepAliveTime(unit) > 0);
@@ -358,11 +369,8 @@ public class ShadowThreadPoolExecutor extends ThreadPoolExecutor {
                 EXECUTOR != null ? EXECUTOR.getThreadFactory() : new NamedThreadFactory(prefix),
                 handler
         );
-        if (prefix.contains("instabridge")) {
-            isIBThreadPoolExecutor = true;
-        }
-        if (prefix.contains("okhttp")) {
-            isOkHttpThreadPoolExecutor = true;
+        if (shouldExcludeThreadPool(prefix)) {
+            isExcludedThreadPool = true;
         }
         if (optimize) {
             allowCoreThreadTimeOut(getKeepAliveTime(unit) > 0);
@@ -444,11 +452,8 @@ public class ShadowThreadPoolExecutor extends ThreadPoolExecutor {
                 EXECUTOR != null ? EXECUTOR.getThreadFactory() : new NamedThreadFactory(threadFactory, prefix),
                 handler
         );
-        if (prefix.contains("instabridge")) {
-            isIBThreadPoolExecutor = true;
-        }
-        if (prefix.contains("okhttp")) {
-            isOkHttpThreadPoolExecutor = true;
+        if (shouldExcludeThreadPool(prefix)) {
+            isExcludedThreadPool = true;
         }
         if (optimize) {
             allowCoreThreadTimeOut(getKeepAliveTime(unit) > 0);
@@ -457,7 +462,7 @@ public class ShadowThreadPoolExecutor extends ThreadPoolExecutor {
 
     @Override
     public void execute(Runnable command) {
-        if (EXECUTOR == null || isIBThreadPoolExecutor || isOkHttpThreadPoolExecutor) {
+        if (EXECUTOR == null || isExcludedThreadPool) {
             super.execute(command);
         } else {
             EXECUTOR.execute(command);
@@ -466,7 +471,7 @@ public class ShadowThreadPoolExecutor extends ThreadPoolExecutor {
 
     @Override
     public Future<?> submit(Runnable command) {
-        if (EXECUTOR == null || isIBThreadPoolExecutor || isOkHttpThreadPoolExecutor) {
+        if (EXECUTOR == null || isExcludedThreadPool) {
             return super.submit(command);
         } else {
              return EXECUTOR.submit(command);
@@ -475,7 +480,7 @@ public class ShadowThreadPoolExecutor extends ThreadPoolExecutor {
 
     @Override
     public <T> Future<T> submit(Callable<T> task) {
-        if (EXECUTOR == null || isIBThreadPoolExecutor || isOkHttpThreadPoolExecutor) {
+        if (EXECUTOR == null || isExcludedThreadPool) {
             return super.submit(task);
         } else {
             return EXECUTOR.submit(task);
@@ -484,7 +489,7 @@ public class ShadowThreadPoolExecutor extends ThreadPoolExecutor {
 
     @Override
     public <T> Future<T> submit(Runnable task, T result) {
-        if (EXECUTOR == null || isIBThreadPoolExecutor || isOkHttpThreadPoolExecutor) {
+        if (EXECUTOR == null || isExcludedThreadPool) {
             return super.submit(task, result);
         } else {
             return EXECUTOR.submit(task, result);
