@@ -34,7 +34,7 @@ private val ARGS = System.getProperty("gradle.args").split("\\s+".toRegex()) + l
 )
 
 @Suppress("RemoveCurlyBracesFromTemplate", "FunctionName")
-abstract class V81IntegrationTest(private val isLib: Boolean) {
+abstract class V82IntegrationTest(private val isLib: Boolean) {
 
     private val projectDir = TemporaryFolder()
 
@@ -92,9 +92,9 @@ abstract class V81IntegrationTest(private val isLib: Boolean) {
 
 }
 
-class V81AppIntegrationTest : V81IntegrationTest(false)
+class V81AppIntegrationTest : V82IntegrationTest(false)
 
-class V81LibIntegrationTest : V81IntegrationTest(true)
+class V81LibIntegrationTest : V82IntegrationTest(true)
 
 
 class ProjectTest : TestCase {
