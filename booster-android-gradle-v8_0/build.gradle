@@ -11,8 +11,8 @@ dependencies {
     compileOnly 'com.android.tools:repository:30.0.0'
     compileOnly 'com.android.tools:common:30.0.0'
     compileOnly 'com.android.tools:sdklib:30.0.0'
-    compileOnly 'com.android.tools.build:gradle:8.0.0'
-    testImplementation 'com.android.tools.build:gradle:8.0.0'
+    compileOnly 'com.android.tools.build:gradle:8.2.0'
+    testImplementation 'com.android.tools.build:gradle:8.2.0'
     testImplementation 'com.android.tools:common:30.0.0'
     testImplementation 'io.bootstage.testkit:testkit-gradle-plugin:2.1.0'
     testImplementation project(':booster-build')
