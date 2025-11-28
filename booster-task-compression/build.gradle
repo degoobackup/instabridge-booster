@@ -8,6 +8,7 @@ dependencies {
     compileOnly 'com.android.tools:common:31.11.0'
     compileOnly 'com.android.tools.build:gradle:8.11.0'
     compileOnly 'com.android.tools.build:builder:4.0.0'
+    testCompileOnly 'com.android.tools:common:31.11.0'
     testCompileOnly 'com.android.tools.build:gradle:8.11.0'
     testCompileOnly 'com.android.tools.build:builder:4.0.0'
 }
