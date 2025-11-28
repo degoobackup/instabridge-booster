@@ -8,6 +8,6 @@ dependencies {
     implementation project(':booster-graph-dot')
     implementation project(':booster-graph-json')
     implementation project(':booster-transform-asm')
-    compileOnly 'com.android.tools.build:gradle:8.2.0'
-    testCompileOnly 'com.android.tools.build:gradle:8.2.0'
+    compileOnly 'com.android.tools.build:gradle:8.11.0'
+    testCompileOnly 'com.android.tools.build:gradle:8.11.0'
 }
