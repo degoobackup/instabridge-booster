@@ -52,3 +52,10 @@ project.tasks.named('packageSources') {
     dependsOn ":${project.name}:generateBuildJavaFile"
 }
 
+// Ensure kaptGenerateStubsKotlin depends on generateBuildJavaFile to fix Gradle 8.2+ task dependency validation
+project.tasks.configureEach { task ->
+    if (task.name == 'kaptGenerateStubsKotlin') {
+        task.dependsOn ":${project.name}:generateBuildJavaFile"
+    }
+}
+
