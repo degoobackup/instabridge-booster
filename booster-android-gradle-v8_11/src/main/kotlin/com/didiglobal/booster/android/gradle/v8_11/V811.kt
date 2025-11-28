@@ -69,7 +69,7 @@ internal object V811 : AGPInterface {
         get() = when (this) {
             is VariantImpl<*> -> this
             is AnalyticsEnabledVariant -> this.delegate as VariantImpl<*>
-            else -> TODO("No implementationed!")
+            else -> TODO("Not implemented!")
         }
 
     @Suppress("UnstableApiUsage")
