@@ -1,7 +1,9 @@
+import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
+
 import static org.gradle.kotlin.dsl.KotlinDependencyExtensionsKt.embeddedKotlinVersion
 
 buildscript {
-    ext.kotlin_version = embeddedKotlinVersion
+    ext.kotlin_version = "2.0.21"
 
     repositories {
         mavenLocal()
@@ -147,6 +149,15 @@ allprojects { project ->
 
 subprojects { project ->
     rootProject.clean.dependsOn project.clean
+}
+
+subprojects { subproj ->
+    // Only apply to booster-* modules if you want
+    if (subproj.name.startsWith("booster-")) {
+        subproj.tasks.matching { it.name == "kaptGenerateStubsKotlin" }.configureEach {
+            dependsOn(subproj.tasks.named("generateBuildJavaFile"))
+        }
+    }
 }
 
 dependencies {
