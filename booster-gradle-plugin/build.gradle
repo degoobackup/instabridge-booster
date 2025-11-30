@@ -6,9 +6,9 @@ dependencies {
     api project(':booster-annotations')
     api project(':booster-api')
     implementation project(':booster-task-transform')
-    // AGP version-specific implementations for AGPInterfaceFactory
-    runtimeOnly project(':booster-android-gradle-v8_11')
-    runtimeOnly project(':booster-android-gradle-v8_12')
+    // AGP version-specific implementations for AGPInterfaceFactory (must be api/implementation to be transitive)
+    api project(':booster-android-gradle-v8_11')
+    api project(':booster-android-gradle-v8_12')
     compileOnly 'com.android.tools.build:gradle:8.12.0'
     testCompileOnly 'com.android.tools.build:gradle:8.12.0'
 }
