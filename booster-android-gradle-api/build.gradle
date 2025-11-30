@@ -3,6 +3,6 @@ apply from: "$rootDir/gradle/booster.gradle"
 dependencies {
     api project(':booster-kotlinx')
     api project(':booster-android-gradle-compat')
-    compileOnly 'com.android.tools.build:gradle:8.11.0'
-    testCompileOnly 'com.android.tools.build:gradle:8.11.0'
+    compileOnly 'com.android.tools.build:gradle:8.12.0'
+    testCompileOnly 'com.android.tools.build:gradle:8.12.0'
 }
