@@ -199,6 +199,12 @@ private val FACTORIES: List<AGPInterfaceFactory> by lazy {
 }
 
 val AGP: AGPInterface by lazy {
+    if (FACTORIES.isEmpty()) {
+        throw IllegalStateException(
+            "No AGPInterfaceFactory implementations found for AGP $REVISION. " +
+            "Ensure booster-android-gradle-v8_11 or booster-android-gradle-v8_12 is on the classpath."
+        )
+    }
     val factory = FACTORIES.firstOrNull {
         it.revision.major == REVISION.major && it.revision.minor == REVISION.minor
     } ?: FACTORIES.firstOrNull {
