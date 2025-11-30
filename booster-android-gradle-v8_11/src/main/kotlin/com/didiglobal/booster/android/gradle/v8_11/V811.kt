@@ -1,4 +1,4 @@
-package com.didiglobal.booster.android.gradle.v8_2
+package com.didiglobal.booster.android.gradle.v8_11
 
 import com.android.build.api.artifact.Artifact
 import com.android.build.api.artifact.MultipleArtifact
@@ -62,14 +62,14 @@ private val MULTIPLE_ARTIFACT_TYPES = arrayOf(
 }
 
 @Suppress("DEPRECATION")
-internal object V82 : AGPInterface {
+internal object V811 : AGPInterface {
 
 
     private val Variant.component: VariantImpl<*>
         get() = when (this) {
             is VariantImpl<*> -> this
             is AnalyticsEnabledVariant -> this.delegate as VariantImpl<*>
-            else -> TODO("No implementationed!")
+            else -> TODO("Not implemented!")
         }
 
     @Suppress("UnstableApiUsage")
@@ -129,7 +129,7 @@ internal object V82 : AGPInterface {
         get() = component.taskContainer.processJavaResourcesTask
 
     override fun Variant.getTaskName(prefix: String): String {
-        return component.computeTaskName(prefix)
+        return component.computeTaskNameInternal(prefix)
     }
 
     override fun Variant.getTaskName(prefix: String, suffix: String): String {
@@ -161,11 +161,6 @@ internal object V82 : AGPInterface {
                     ArtifactScope.ALL,
                     AndroidArtifacts.ArtifactType.ANDROID_RES
                 ).artifactFiles
-            )
-
-            allRes.from(
-                component.services.fileCollection(variantData.extraGeneratedResFolders)
-                    .builtBy(listOfNotNull(variantData.extraGeneratedResFolders.builtBy))
             )
 
             component.taskContainer.generateApkDataTask?.let {
@@ -271,19 +266,15 @@ internal object V82 : AGPInterface {
     override val Variant.mergedAssets: FileCollection
         get() = when (this) {
             is ApplicationVariant -> getFinalArtifactFiles(InternalArtifactType.COMPRESSED_ASSETS)
-            is LibraryVariant     -> getFinalArtifactFiles(InternalArtifactType.LIBRARY_ASSETS)
+            is LibraryVariant     -> getFinalArtifactFiles(SingleArtifact.ASSETS)
             else                  -> TODO("Unsupported variant type: $name@${javaClass.name}")
         }
 
     override val Variant.processedRes: FileCollection
-        get() = getFinalArtifactFiles(InternalArtifactType.PROCESSED_RES)
+        get() = getFinalArtifactFiles(InternalArtifactType.OPTIMIZED_PROCESSED_RES)
 
     override val Variant.symbolList: FileCollection
-        get() = when (this) {
-            is ApplicationVariant -> getFinalArtifactFiles(InternalArtifactType.RUNTIME_SYMBOL_LIST)
-            is LibraryVariant     -> getFinalArtifactFiles(InternalArtifactType.COMPILE_SYMBOL_LIST)
-            else                  -> TODO("Unsupported variant type: $name@${javaClass.name}")
-        }
+        get() = getFinalArtifactFiles(InternalArtifactType.COMPILE_SYMBOL_LIST)
 
     override val Variant.symbolListWithPackageName: FileCollection
         get() = getFinalArtifactFiles(InternalArtifactType.SYMBOL_LIST_WITH_PACKAGE_NAME)

@@ -1,6 +1,6 @@
 @file:Suppress("DEPRECATION")
 
-package com.didiglobal.booster.android.gradle.v8_2
+package com.didiglobal.booster.android.gradle.v8_11
 
 import com.android.build.api.variant.Variant
 import com.didiglobal.booster.gradle.AGP
@@ -26,7 +26,7 @@ private const val TARGET_SDK_VERSION = 30
 
 private val ARGS = System.getProperty("gradle.args").split("\\s+".toRegex()) + listOf(
     "-Pbooster_version=${Build.VERSION}",
-    "-Pandroid_gradle_version=8.1.0",
+    "-Pandroid_gradle_version=8.11.0",
     "-Pcompile_sdk_version=30",
     "-Pbuild_tools_version=29.0.2",
     "-Pmin_sdk_version=$MIN_SDK_VERSION",
@@ -34,14 +34,14 @@ private val ARGS = System.getProperty("gradle.args").split("\\s+".toRegex()) + l
 )
 
 @Suppress("RemoveCurlyBracesFromTemplate", "FunctionName")
-abstract class V82IntegrationTest(private val isLib: Boolean) {
+abstract class V811IntegrationTest(private val isLib: Boolean) {
 
     private val projectDir = TemporaryFolder()
 
     @get:Rule
     val ruleChain: TestRule = rule(projectDir) {
         rule(LocalProperties(projectDir::getRoot)) {
-            GradleExecutor(projectDir::getRoot, "8.0", *ARGS.toTypedArray())
+            GradleExecutor(projectDir::getRoot, "8.13", *ARGS.toTypedArray())
         }
     }
 
@@ -52,7 +52,7 @@ abstract class V82IntegrationTest(private val isLib: Boolean) {
         projectDir.copyFromResource("src")
         projectDir.newFile("gradle.properties").writeText("org.gradle.jvmargs=-Xmx4g -XX:MaxMetaspaceSize=2g")
         assertEquals(8, AGP.revision.major)
-        assertEquals(1, AGP.revision.minor)
+        assertEquals(11, AGP.revision.minor)
     }
 
 
@@ -92,9 +92,9 @@ abstract class V82IntegrationTest(private val isLib: Boolean) {
 
 }
 
-class V81AppIntegrationTest : V82IntegrationTest(false)
+class V811AppIntegrationTest : V811IntegrationTest(false)
 
-class V81LibIntegrationTest : V82IntegrationTest(true)
+class V811LibIntegrationTest : V811IntegrationTest(true)
 
 
 class ProjectTest : TestCase {
@@ -139,14 +139,14 @@ class MergeResourcesTaskTestUnit : VariantTestCase() {
 
 class GetTaskNameTestUnit : VariantTestCase() {
     override fun apply(variant: Variant) {
-        assertEquals("assemble${variant.name.capitalized()}", AGP.run { variant.getTaskName("assemble") })
+        assertEquals("assemble${variant.name.replaceFirstChar { it.uppercase() }}", AGP.run { variant.getTaskName("assemble") })
     }
 }
 
 
 class GetTaskName2TestUnit : VariantTestCase() {
     override fun apply(variant: Variant) {
-        assertEquals("merge${variant.name.capitalized()}Resources", AGP.run { variant.getTaskName("merge", "Resources") })
+        assertEquals("merge${variant.name.replaceFirstChar { it.uppercase() }}Resources", AGP.run { variant.getTaskName("merge", "Resources") })
     }
 }
 
