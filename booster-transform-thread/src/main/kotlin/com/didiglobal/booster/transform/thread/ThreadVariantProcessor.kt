@@ -18,6 +18,10 @@ class ThreadVariantProcessor(
         if (variantBuilder is LibraryVariantBuilder || variantBuilder is DynamicFeatureVariantBuilder) {
             return
         }
-        project.dependencies.add("${variantBuilder.name}Implementation", "com.github.degoobackup.instabridge-booster:booster-android-instrument-thread:${Build.VERSION}")
+
+        val dep = "com.github.degoobackup.instabridge-booster:" +
+                "booster-android-instrument-thread:$VERSION"   // <-- your booster version constant
+
+        project.dependencies.add("implementation", dep)
     }
 }
