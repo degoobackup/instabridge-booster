@@ -20,6 +20,14 @@ class SharedPreferencesVariantProcessor(private val project: Project) : VariantP
         if (variantBuilder is LibraryVariantBuilder || variantBuilder is DynamicFeatureVariantBuilder) {
             return
         }
-        project.dependencies.add("${variantBuilder.name}Implementation", "com.github.degoobackup.instabridge-booster:booster-android-instrument-shared-preferences:${VERSION}")
+        val flagName = "sharedPrefsBoosterAdded"
+        val extras = project.extensions.extraProperties
+        if (extras.has(flagName) && extras.get(flagName) == true) return
+
+        val dep =
+            "com.github.degoobackup.instabridge-booster:booster-android-instrument-shared-preferences:$VERSION"
+
+        project.dependencies.add("implementation", dep)
+        extras.set(flagName, true)
     }
 }
