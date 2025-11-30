@@ -19,14 +19,9 @@ class ThreadVariantProcessor(
             return
         }
 
-        val flagKey = "boosterThreadInstrumentAdded"
-        val extras = project.extensions.extraProperties
-        if (extras.has(flagKey) && extras.get(flagKey) == true) return
-
         val dep = "com.github.degoobackup.instabridge-booster:" +
                 "booster-android-instrument-thread:$VERSION"   // <-- your booster version constant
 
         project.dependencies.add("implementation", dep)
-        extras.set(flagKey, true)
     }
 }
