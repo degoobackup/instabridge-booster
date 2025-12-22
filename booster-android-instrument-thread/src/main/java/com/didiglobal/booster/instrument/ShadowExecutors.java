@@ -224,7 +224,7 @@ public class ShadowExecutors {
         }
         final ThreadPoolExecutor executor = new ThreadPoolExecutor(0, Integer.MAX_VALUE, 60L, TimeUnit.SECONDS, new SynchronousQueue<Runnable>(), new NamedThreadFactory(name));
         executor.allowCoreThreadTimeOut(true);
-        return EXECUTOR;
+        return executor;
     }
 
     public static ExecutorService newOptimizedCachedThreadPool(final ThreadFactory factory, final String name) {
@@ -233,7 +233,7 @@ public class ShadowExecutors {
         }
         final ThreadPoolExecutor executor = new ThreadPoolExecutor(0, Integer.MAX_VALUE, 60L, TimeUnit.SECONDS, new SynchronousQueue<Runnable>(), new NamedThreadFactory(factory, name));
         executor.allowCoreThreadTimeOut(true);
-        return EXECUTOR;
+        return executor;
     }
 
     //</editor-fold>
