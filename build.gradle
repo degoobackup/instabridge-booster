@@ -51,19 +51,6 @@ allprojects { project ->
         }
     }
 
-    sourceSets {
-        main {
-            kotlin {
-                srcDirs += ['src/main/kotlin', 'src/main/java', 'build/generated/source/buildprops/main/java']
-            }
-        }
-        test {
-            kotlin {
-                srcDirs += ['src/main/kotlin', 'src/main/java', 'build/generated/source/buildprops/main/java']
-            }
-        }
-    }
-
     javadoc {
         failOnError = false
     }
@@ -144,22 +131,6 @@ allprojects { project ->
             }
         }
 
-        if (!project.hasProperty("signing.skip")) {
-            apply plugin: 'signing'
-
-            def signingTasks = project.tasks.withType(Sign)
-            project.tasks.withType(PublishToMavenLocal) {
-                dependsOn signingTasks
-            }
-
-            project.tasks.withType(PublishToMavenRepository) {
-                dependsOn signingTasks
-            }
-
-            project.signing {
-                sign publication
-            }
-        }
     }
 
     project.afterEvaluate {
