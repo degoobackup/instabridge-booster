@@ -20,7 +20,7 @@ import java.io.PrintWriter
 @Suppress("UnstableApiUsage")
 @Deprecated(
         message = "Use AGPInterface instead",
-        replaceWith = ReplaceWith("BoosterVariant.getDependencies(Boolean, (ComponentIdentifier) -> Boolean)"),
+        replaceWith = ReplaceWith("Variant.getDependencies(Boolean, (ComponentIdentifier) -> Boolean)"),
         level = DeprecationLevel.WARNING
 )
 class ResolvedArtifactResults(private val variant: Variant) : Collection<ResolvedArtifactResult> {

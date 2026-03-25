@@ -52,3 +52,7 @@ project.tasks.named('packageSources') {
     dependsOn ":${project.name}:generateBuildJavaFile"
 }
 
+project.tasks.matching { it.name == 'kaptGenerateStubsKotlin' }.configureEach {
+    dependsOn ":${project.name}:generateBuildJavaFile"
+}
+
