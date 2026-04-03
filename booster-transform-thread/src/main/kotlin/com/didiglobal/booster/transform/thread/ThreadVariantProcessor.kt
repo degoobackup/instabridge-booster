@@ -10,18 +10,13 @@ import com.google.auto.service.AutoService
 import org.gradle.api.Project
 
 @AutoService(VariantProcessor::class)
-class ThreadVariantProcessor(
-    private val project: Project
-) : VariantProcessor {
+class ThreadVariantProcessor(private val project: Project) : VariantProcessor {
 
     override fun beforeProcess(variantBuilder: VariantBuilder) {
         if (variantBuilder is LibraryVariantBuilder || variantBuilder is DynamicFeatureVariantBuilder) {
             return
         }
-
-        val dep = "com.github.degoobackup.instabridge-booster:" +
-                "booster-android-instrument-thread:$VERSION"   // <-- your booster version constant
-
-        project.dependencies.add("implementation", dep)
+        project.dependencies.add("${variantBuilder.name}Implementation", "com.github.degoobackup.instabridge-booster:booster-android-instrument-thread:${Build.VERSION}")
     }
+
 }

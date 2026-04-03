@@ -54,7 +54,7 @@ class AsmTransformer : Transformer {
 
     override fun transform(context: TransformContext, bytecode: ByteArray): ByteArray {
         val diffEnabled = context.getProperty("booster.transform.diff", false)
-        return ClassWriter(ClassWriter.COMPUTE_FRAMES).also { writer ->
+        return ClassWriter(ClassWriter.COMPUTE_MAXS).also { writer ->
             this.transformers.fold(ClassNode().also { klass ->
                 ClassReader(bytecode).accept(klass, 0)
             }) { a, transformer ->
