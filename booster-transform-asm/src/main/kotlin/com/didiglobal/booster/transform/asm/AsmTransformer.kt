@@ -59,7 +59,7 @@ class AsmTransformer : Transformer {
                 try { super.getCommonSuperClass(type1, type2) } catch (_: Throwable) { "java/lang/Object" }
         }.also { writer ->
             this.transformers.fold(ClassNode().also { klass ->
-                ClassReader(bytecode).accept(klass, 0)
+                ClassReader(bytecode).accept(klass, ClassReader.EXPAND_FRAMES)
             }) { a, transformer ->
                 this.threadMxBean.sumCpuTime(transformer) {
                     if (diffEnabled) {
