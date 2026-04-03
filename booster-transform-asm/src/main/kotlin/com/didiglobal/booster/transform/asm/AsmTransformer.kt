@@ -54,30 +54,38 @@ class AsmTransformer : Transformer {
 
     override fun transform(context: TransformContext, bytecode: ByteArray): ByteArray {
         val diffEnabled = context.getProperty("booster.transform.diff", false)
-        return object : ClassWriter(ClassWriter.COMPUTE_FRAMES) {
-            override fun getCommonSuperClass(type1: String, type2: String): String =
-                try { super.getCommonSuperClass(type1, type2) } catch (_: Throwable) { "java/lang/Object" }
-        }.also { writer ->
-            this.transformers.fold(ClassNode().also { klass ->
-                ClassReader(bytecode).accept(klass, ClassReader.EXPAND_FRAMES)
-            }) { a, transformer ->
-                this.threadMxBean.sumCpuTime(transformer) {
-                    if (diffEnabled) {
-                        val left = a.textify()
-                        transformer.transform(context, a).also trans@{ b ->
-                            val right = b.textify()
-                            val diff = if (left == right) "" else left diff right
-                            if (diff.isEmpty() || diff.isBlank()) {
-                                return@trans
-                            }
-                            transformer.getReport(context, "${a.className}.diff").touch().writeText(diff)
+        val transformedKlass = this.transformers.fold(ClassNode().also { klass ->
+            ClassReader(bytecode).accept(klass, ClassReader.EXPAND_FRAMES)
+        }) { a, transformer ->
+            this.threadMxBean.sumCpuTime(transformer) {
+                if (diffEnabled) {
+                    val left = a.textify()
+                    transformer.transform(context, a).also trans@{ b ->
+                        val right = b.textify()
+                        val diff = if (left == right) "" else left diff right
+                        if (diff.isEmpty() || diff.isBlank()) {
+                            return@trans
                         }
-                    } else {
-                        transformer.transform(context, a)
+                        transformer.getReport(context, "${a.className}.diff").touch().writeText(diff)
                     }
+                } else {
+                    transformer.transform(context, a)
                 }
-            }.accept(writer)
-        }.toByteArray()
+            }
+        }
+        // COMPUTE_FRAMES produces correct StackMapTable for R8. Fall back to COMPUTE_MAXS
+        // for legacy classes containing JSR/RET instructions (pre-Java 7) which COMPUTE_FRAMES
+        // does not support; those classes already have valid frames that R8 can handle.
+        return try {
+            object : ClassWriter(ClassWriter.COMPUTE_FRAMES) {
+                override fun getCommonSuperClass(type1: String, type2: String): String =
+                    try { super.getCommonSuperClass(type1, type2) } catch (_: Throwable) { "java/lang/Object" }
+            }.also { transformedKlass.accept(it) }.toByteArray()
+        } catch (e: IllegalArgumentException) {
+            if (e.message?.contains("JSR/RET") == true) {
+                ClassWriter(ClassWriter.COMPUTE_MAXS).also { transformedKlass.accept(it) }.toByteArray()
+            } else throw e
+        }
     }
 
     override fun onPostTransform(context: TransformContext) {
