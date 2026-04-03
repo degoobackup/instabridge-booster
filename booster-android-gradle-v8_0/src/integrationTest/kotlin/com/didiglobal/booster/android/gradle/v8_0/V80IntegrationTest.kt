@@ -2,8 +2,16 @@
 
 package com.didiglobal.booster.android.gradle.v8_0
 
+import com.android.build.api.dsl.CommonExtension
+import com.android.build.api.variant.AndroidComponentsExtension
+import com.android.build.api.variant.TestAndroidComponentsExtension
 import com.android.build.api.variant.Variant
+import com.android.build.api.variant.VariantBuilder
 import com.didiglobal.booster.gradle.AGP
+import com.didiglobal.booster.gradle.assembleTaskProvider
+import com.didiglobal.booster.gradle.getAndroidComponents
+import com.didiglobal.booster.gradle.project
+import com.didiglobal.booster.kotlinx.capitalized
 import com.didiglobal.booster.kotlinx.search
 import io.bootstage.testkit.gradle.Case
 import io.bootstage.testkit.gradle.TestCase
@@ -18,7 +26,12 @@ import org.junit.Rule
 import org.junit.rules.TemporaryFolder
 import org.junit.rules.TestRule
 import java.io.File
-import kotlin.test.*
+import kotlin.test.Test
+import kotlin.test.assertEquals
+import kotlin.test.assertFalse
+import kotlin.test.assertNotNull
+import kotlin.test.assertTrue
+import kotlin.test.fail
 
 private val MIN_SDK_VERSION = System.getProperty("android.minsdk.version").toInt()
 
@@ -55,7 +68,6 @@ abstract class V80IntegrationTest(private val isLib: Boolean) {
         assertEquals(0, AGP.revision.minor)
     }
 
-
     @Test
     @Case(ProjectTest::class)
     fun `test AGPInterface#project`() = Unit
@@ -85,11 +97,6 @@ abstract class V80IntegrationTest(private val isLib: Boolean) {
     fun `test AGPInterface#allClasses`() {
     }
 
-//    @Test
-//    @Case(BuildToolsTestUnit::class)
-//    fun `test AGPInterface#buildTools`() {
-//    }
-
 }
 
 class V80AppIntegrationTest : V80IntegrationTest(false)
@@ -102,80 +109,95 @@ class ProjectTest : TestCase {
         val assert: (Variant) -> Unit = { variant ->
             assertEquals(project, AGP.run { variant.project })
         }
+        project.getAndroidComponents<AndroidComponentsExtension<*, *, *>>().onVariants(callback = assert)
     }
 }
 
 class JavaCompilerTaskTestUnit : VariantTestCase() {
-     override fun apply(variant: Variant) {
-        assertNotNull(AGP.run {
-            variant.javaCompilerTask
-        })
+    override fun apply(variant: Variant) {
+        variant.project.gradle.taskGraph.whenReady {
+            assertNotNull(AGP.run {
+                variant.javaCompilerTask
+            })
+        }
     }
 }
 
 class PreBuildTaskTestUnit : VariantTestCase() {
-     override fun apply(variant: Variant) {
-        assertNotNull(AGP.run { variant.preBuildTask })
+    override fun apply(variant: Variant) {
+        variant.project.gradle.taskGraph.whenReady {
+            assertNotNull(AGP.run { variant.preBuildTask })
+        }
     }
 }
 
 class AssembleTaskTestUnit : VariantTestCase() {
-     override fun apply(variant: Variant) {
-        assertNotNull(AGP.run { variant.assembleTask })
+    override fun apply(variant: Variant) {
+        variant.project.gradle.taskGraph.whenReady {
+            assertNotNull(AGP.run { variant.assembleTask })
+        }
     }
 }
 
 class MergeAssetsTaskTestUnit : VariantTestCase() {
-     override fun apply(variant: Variant) {
-        assertNotNull(AGP.run { variant.mergeAssetsTask })
+    override fun apply(variant: Variant) {
+        variant.project.gradle.taskGraph.whenReady {
+            assertNotNull(AGP.run { variant.mergeAssetsTask })
+        }
     }
 }
 
 class MergeResourcesTaskTestUnit : VariantTestCase() {
-     override fun apply(variant: Variant) {
-        assertNotNull(AGP.run { variant.mergeResourcesTask })
+    override fun apply(variant: Variant) {
+        variant.project.gradle.taskGraph.whenReady {
+            assertNotNull(AGP.run { variant.mergeResourcesTask })
+        }
     }
 }
 
 class GetTaskNameTestUnit : VariantTestCase() {
-     override fun apply(variant: Variant) {
-        assertEquals("assemble${variant.name.capitalized()}", AGP.run { variant.getTaskName("assemble") })
+    override fun apply(variant: Variant) {
+        variant.project.gradle.taskGraph.whenReady {
+            assertEquals("assemble${variant.name.capitalized()}", AGP.run { variant.getTaskName("assemble") })
+        }
     }
 }
 
 
 class GetTaskName2TestUnit : VariantTestCase() {
-     override fun apply(variant: Variant) {
-        assertEquals("merge${variant.name.capitalized()}Resources", AGP.run { variant.getTaskName("merge", "Resources") })
+    override fun apply(variant: Variant) {
+        variant.project.gradle.taskGraph.whenReady {
+            assertEquals("merge${variant.name.capitalized()}Resources", AGP.run { variant.getTaskName("merge", "Resources") })
+        }
     }
 }
 
 class VariantDataTestUnit : VariantTestCase() {
-     override fun apply(variant: Variant) {
+    override fun apply(variant: Variant) {
         assertNotNull(AGP.run { variant.variantData })
     }
 }
 
 class OriginalApplicationIdTestUnit : VariantTestCase() {
-     override fun apply(variant: Variant) {
-        AGP.run { variant.assembleTask }.doFirst {
+    override fun apply(variant: Variant) {
+        variant.project.gradle.taskGraph.whenReady {
             assertNotNull(AGP.run { variant.originalApplicationId })
         }
     }
 }
 
 class HasDynamicFeatureTestUnit : VariantTestCase() {
-     override fun apply(variant: Variant) {
+    override fun apply(variant: Variant) {
         assertFalse(AGP.run { variant.hasDynamicFeature })
     }
 }
 
 class RawAndroidResourcesTestUnit : VariantTestCase() {
-     override fun apply(variant: Variant) {
-        AGP.run { variant.assembleTask }.doFirst {
+    override fun apply(variant: Variant) {
+        variant.project.gradle.taskGraph.whenReady {
             val rawAndroidResources = AGP.run { variant.rawAndroidResources }
             assertNotNull(rawAndroidResources)
-            if (rawAndroidResources.isEmpty()) {
+            if (rawAndroidResources.isEmpty) {
                 fail("rawAndroidResources is empty")
             }
             rawAndroidResources.forEach {
@@ -186,8 +208,8 @@ class RawAndroidResourcesTestUnit : VariantTestCase() {
 }
 
 class AllArtifactsTestUnit : VariantTestCase() {
-     override fun apply(variant: Variant) {
-        AGP.run { variant.assembleTask }.doFirst {
+    override fun apply(variant: Variant) {
+        variant.project.gradle.taskGraph.whenReady {
             val allArtifacts = AGP.run { variant.allArtifacts }
             assertNotNull(allArtifacts)
             if (allArtifacts.isEmpty()) {
@@ -201,7 +223,7 @@ class AllArtifactsTestUnit : VariantTestCase() {
 }
 
 class MinSdkVersionTestUnit : VariantTestCase() {
-     override fun apply(variant: Variant) {
+    override fun apply(variant: Variant) {
         val minSdkVersion = AGP.run { variant.minSdkVersion }
         assertNotNull(minSdkVersion)
         assertEquals(MIN_SDK_VERSION, minSdkVersion.apiLevel)
@@ -209,7 +231,7 @@ class MinSdkVersionTestUnit : VariantTestCase() {
 }
 
 class TargetSdkVersionTestUnit : VariantTestCase() {
-     override fun apply(variant: Variant) {
+    override fun apply(variant: Variant) {
         val targetSdkVersion = AGP.run { variant.targetSdkVersion }
         assertNotNull(targetSdkVersion)
         assertEquals(TARGET_SDK_VERSION, targetSdkVersion.apiLevel)
@@ -223,8 +245,8 @@ class AarTestUnit : VariantTestCase() {
         }
     }
 
-     override fun apply(variant: Variant) {
-        AGP.run { variant.assembleTask }.doFirst {
+    override fun apply(variant: Variant) {
+        variant.project.gradle.taskGraph.whenReady {
             val aar = AGP.run { variant.aar }.search {
                 it.extension == "aar"
             }
@@ -245,8 +267,8 @@ class ApkTestUnit : VariantTestCase() {
         }
     }
 
-     override fun apply(variant: Variant) {
-        AGP.run { variant.assembleTask }.doFirst {
+    override fun apply(variant: Variant) {
+        variant.project.gradle.taskGraph.whenReady {
             val apk = AGP.run { variant.apk }.search {
                 it.extension == "apk"
             }
@@ -267,8 +289,8 @@ class MergedManifestsTestUnit : VariantTestCase() {
         }
     }
 
-     override fun apply(variant: Variant) {
-        AGP.run { variant.assembleTask }.doFirst {
+    override fun apply(variant: Variant) {
+        variant.project.gradle.taskGraph.whenReady {
             val mergedManifests = AGP.run { variant.mergedManifests }.search {
                 it.name == "AndroidManifest.xml"
             }
@@ -283,10 +305,10 @@ class MergedManifestsTestUnit : VariantTestCase() {
 }
 
 class MergedResourcesTestUnit : VariantTestCase() {
-     override fun apply(variant: Variant) {
-        AGP.run { variant.assembleTask }.doFirst {
+    override fun apply(variant: Variant) {
+        variant.project.gradle.taskGraph.whenReady {
             val mergedResources = AGP.run { variant.mergedRes }
-            if (mergedResources.isEmpty()) {
+            if (mergedResources.isEmpty) {
                 fail("mergedRes is empty")
             }
             mergedResources.forEach {
@@ -297,8 +319,8 @@ class MergedResourcesTestUnit : VariantTestCase() {
 }
 
 class MergedAssetsTestUnit : VariantTestCase() {
-     override fun apply(variant: Variant) {
-        AGP.run { variant.assembleTask }.doFirst {
+    override fun apply(variant: Variant) {
+        variant.project.gradle.taskGraph.whenReady {
             val mergedAssets = AGP.run { variant.mergedAssets }
             if (mergedAssets.isEmpty()) {
                 fail("mergedAssets is empty")
@@ -317,8 +339,8 @@ class ProcessedResTestUnit : VariantTestCase() {
         }
     }
 
-     override fun apply(variant: Variant) {
-        AGP.run { variant.assembleTask }.doFirst {
+    override fun apply(variant: Variant) {
+        variant.project.gradle.taskGraph.whenReady {
             val processedRes = AGP.run { variant.processedRes }.search {
                 it.extension == "ap_"
             }
@@ -333,10 +355,10 @@ class ProcessedResTestUnit : VariantTestCase() {
 }
 
 class SymbolListTestUnit : VariantTestCase() {
-     override fun apply(variant: Variant) {
-        AGP.run { variant.assembleTask }.doFirst {
+    override fun apply(variant: Variant) {
+        variant.project.gradle.taskGraph.whenReady {
             val symbolList = AGP.run { variant.symbolList }
-            if (symbolList.isEmpty()) {
+            if (symbolList.isEmpty) {
                 fail("symbolList is empty")
             }
             symbolList.forEach {
@@ -347,8 +369,8 @@ class SymbolListTestUnit : VariantTestCase() {
 }
 
 class SymbolListWithPackageNameTestUnit : VariantTestCase() {
-     override fun apply(variant: Variant) {
-        AGP.run { variant.assembleTask }.doFirst {
+    override fun apply(variant: Variant) {
+        variant.project.gradle.taskGraph.whenReady {
             val symbolListWithPackageName = AGP.run { variant.symbolListWithPackageName }
             if (symbolListWithPackageName.isEmpty) {
                 fail("symbolListWithPackageName is empty")
@@ -361,12 +383,16 @@ class SymbolListWithPackageNameTestUnit : VariantTestCase() {
 }
 
 class AllClassesTestUnit : VariantTestCase() {
-     override fun apply(variant: Variant) {
-        AGP.run { variant.assembleTask }.doFirst {
-            val location = AGP.run { variant.allClasses }.files
-            assertTrue("ALL_CLASSES: $location", location::isNotEmpty)
-            assertTrue("No class file found at $location") {
-                location.search(File::isFile).isNotEmpty()
+    override fun apply(variant: Variant) {
+        variant.project.gradle.taskGraph.whenReady {
+            variant.assembleTaskProvider.configure {
+                it.doFirst {
+                    val location = AGP.run { variant.allClasses }.files
+                    assertTrue("ALL_CLASSES: $location", location::isNotEmpty)
+                    assertTrue("No class file found at $location") {
+                        location.search(File::isFile).isNotEmpty()
+                    }
+                }
             }
         }
     }

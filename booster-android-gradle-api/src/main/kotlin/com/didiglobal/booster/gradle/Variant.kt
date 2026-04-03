@@ -1,41 +1,29 @@
 package com.didiglobal.booster.gradle
 
+import com.android.build.api.artifact.Artifact
 import com.android.build.api.variant.AndroidVersion
 import com.android.build.api.variant.Variant
-import com.android.build.gradle.BaseExtension
 import com.android.build.gradle.internal.SdkComponentsBuildService
 import com.android.build.gradle.internal.publishing.AndroidArtifacts
 import com.android.build.gradle.internal.services.getBuildService
-import com.android.build.gradle.tasks.ProcessAndroidResources
 import com.android.sdklib.BuildToolInfo
-import com.didiglobal.booster.kotlinx.file
-import org.gradle.api.Incubating
+import org.apache.groovy.lang.annotation.Incubating
 import org.gradle.api.Project
 import org.gradle.api.Task
 import org.gradle.api.UnknownTaskException
 import org.gradle.api.artifacts.ArtifactCollection
 import org.gradle.api.artifacts.result.ResolvedArtifactResult
 import org.gradle.api.file.FileCollection
+import org.gradle.api.file.FileSystemLocation
+import org.gradle.api.provider.Provider
 import org.gradle.api.tasks.TaskProvider
 import java.io.File
-
-
-fun Variant.getReport(artifactName: String, fileName: String): File {
-    return project.buildDir.file("reports", artifactName, name, fileName)
-}
 
 /**
  * The project which this variant belongs
  */
 val Variant.project: Project
     get() = AGP.run { project }
-
-
-/**
- * The `android` extension associates with this variant
- */
-val Variant.extension: BaseExtension
-    get() = project.getAndroid()
 
 /**
  * The location of `$ANDROID_HOME`/platforms/android-`${compileSdkVersion}`
@@ -138,18 +126,18 @@ fun Variant.getTaskName(prefix: String, suffix: String): String = AGP.run {
     getTaskName(prefix, suffix)
 }
 
-val Variant.isApplication: Boolean
-    get() = AGP.run {
+val Variant?.isApplication: Boolean
+    get() = null != this && AGP.run {
         isApplication
     }
 
-val Variant.isLibrary: Boolean
-    get() = AGP.run {
+val Variant?.isLibrary: Boolean
+    get() = null != this && AGP.run {
         isLibrary
     }
 
-val Variant.isDynamicFeature: Boolean
-    get() = AGP.run {
+val Variant?.isDynamicFeature: Boolean
+    get() = null != this && AGP.run {
         isDynamicFeature
     }
 
@@ -158,20 +146,26 @@ val Variant.originalApplicationId: String
         originalApplicationId
     }
 
+fun <T : FileSystemLocation> Variant.getSingleArtifact(
+        type: Artifact.Single<T>
+): Provider<T> = AGP.run {
+    getSingleArtifact(type)
+}
+
 @Incubating
 fun Variant.getArtifactCollection(
-    configType: AndroidArtifacts.ConsumedConfigType,
-    scope: AndroidArtifacts.ArtifactScope,
-    artifactType: AndroidArtifacts.ArtifactType
+        configType: AndroidArtifacts.ConsumedConfigType,
+        scope: AndroidArtifacts.ArtifactScope,
+        artifactType: AndroidArtifacts.ArtifactType
 ): ArtifactCollection = AGP.run {
     getArtifactCollection(configType, scope, artifactType)
 }
 
 @Incubating
 fun Variant.getArtifactFileCollection(
-    configType: AndroidArtifacts.ConsumedConfigType,
-    scope: AndroidArtifacts.ArtifactScope,
-    artifactType: AndroidArtifacts.ArtifactType
+        configType: AndroidArtifacts.ConsumedConfigType,
+        scope: AndroidArtifacts.ArtifactScope,
+        artifactType: AndroidArtifacts.ArtifactType
 ): FileCollection = AGP.run {
     getArtifactFileCollection(configType, scope, artifactType)
 }
@@ -252,6 +246,11 @@ val Variant.symbolListWithPackageName: FileCollection
         symbolListWithPackageName
     }
 
+val Variant.localAndroidResources: FileCollection
+    get() = AGP.run {
+        localAndroidResources
+    }
+
 val Variant.allArtifacts: Map<String, FileCollection>
     get() = AGP.run {
         allArtifacts
@@ -262,111 +261,54 @@ val Variant.buildTools: BuildToolInfo
         buildTools
     }
 
-val Variant.isPrecompileDependenciesResourcesEnabled: Boolean
-    get() = AGP.run {
+val Variant?.isPrecompileDependenciesResourcesEnabled: Boolean
+    get() = null != this && AGP.run {
         isPrecompileDependenciesResourcesEnabled
     }
 
-/**
- * The `compileJava` task associates with this variant
- */
-@Deprecated(
-    message = "Use javaCompilerTaskProvider instead",
-    replaceWith = ReplaceWith(expression = "javaCompilerTaskProvider"),
-    level = DeprecationLevel.WARNING
-)
-val Variant.javaCompilerTask: Task
-    get() = AGP.run { javaCompilerTask }
+val Variant?.isDebuggable: Boolean
+    get() = null != this && AGP.run {
+        isDebuggable
+    }
 
 /**
- * The `preBuild` task associates with this variant
+ * Filter variants by variant name
  */
-@Deprecated(
-    message = "Use preBuildTaskProvider instead",
-    replaceWith = ReplaceWith(expression = "preBuildTaskProvider"),
-    level = DeprecationLevel.WARNING
-)
-val Variant.preBuildTask: Task
-    get() = AGP.run { preBuildTask }
+fun Variant?.filterByName(): List<Variant>.() -> List<Variant> = {
+    val variant = this@filterByName
+
+    if (null == variant) this else this.filter {
+        it.name == variant.name
+    }
+}
 
 /**
- * The `assemble` task associates with this variant
+ * Filter variants by build type
  */
-@Deprecated(
-    message = "Use assembleTaskProvider instead",
-    replaceWith = ReplaceWith(expression = "assembleTaskProvider"),
-    level = DeprecationLevel.WARNING
-)
-val Variant.assembleTask: Task
-    get() = AGP.run { assembleTask }
+fun Variant?.filterByBuildType(): List<Variant>.() -> List<Variant> = {
+    val variant = this@filterByBuildType
+
+    if (null == variant) this else this.filter {
+        it.buildType == variant.buildType
+    }
+}
 
 /**
- * The `mergeAssets` task associates with this variant
+ * Filter variants by flavor name
  */
-@Deprecated(
-    message = "Use mergeAssetsTaskProvider instead",
-    replaceWith = ReplaceWith(expression = "mergeAssetsTaskProvider"),
-    level = DeprecationLevel.WARNING
-)
-val Variant.mergeAssetsTask: Task
-    get() = AGP.run { mergeAssetsTask }
+fun Variant?.filterByFlavorName(): List<Variant>.() -> List<Variant> = {
+    val variant = this@filterByFlavorName
+
+    if (null == variant) this else this.filter {
+        it.flavorName == variant.flavorName
+    }
+}
 
 /**
- * The `mergeResources` task associates with this variant
+ * Filter variants by variant name or build type
  */
-@Deprecated(
-    message = "Use mergeResourcesTaskProvider instead",
-    replaceWith = ReplaceWith(expression = "mergeResourcesTaskProvider"),
-    level = DeprecationLevel.WARNING
-)
-val Variant.mergeResourcesTask: Task
-    get() = AGP.run { mergeResourcesTask }
-
-@Deprecated(
-    message = "Use processJavaResourcesTaskProvider instead",
-    replaceWith = ReplaceWith(expression = "processJavaResourcesTaskProvider"),
-    level = DeprecationLevel.WARNING
-)
-val Variant.processJavaResourcesTask: Task
-    get() = AGP.run { processJavaResourcesTask }
-
-/**
- * The `processRes` task associates with this variant
- */
-@Deprecated(
-    message = "Use processResTaskProvider instead",
-    replaceWith = ReplaceWith(expression = "processResTaskProvider"),
-    level = DeprecationLevel.WARNING
-)
-val Variant.processResTask: ProcessAndroidResources?
-    get() = project.tasks.findByName(getTaskName("process", "Resources")) as? ProcessAndroidResources
-
-/**
- * The `bundleResources` tasks associates with this variant
- */
-@Deprecated(
-    message = "Use bundleResourcesTaskProvider instead",
-    replaceWith = ReplaceWith(expression = "bundleResourcesTaskProvider"),
-    level = DeprecationLevel.WARNING
-)
-val Variant.bundleResourcesTask: Task?
-    get() = project.tasks.findByName(getTaskName("bundle", "Resources"))
-
-/**
- * The `packageBundle` tasks associates with this variant
- */
-@Deprecated(
-    message = "Use packageBundleTaskProvider instead",
-    replaceWith = ReplaceWith(expression = "packageBundleTaskProvider"),
-    level = DeprecationLevel.WARNING
-)
-val Variant.packageBundleTask: Task?
-    get() = project.tasks.findByName(getTaskName("package", "Bundle"))
-
-@Deprecated(
-    message = "Use mergeJavaResourceTaskProvider instead",
-    replaceWith = ReplaceWith(expression = "mergeJavaResourceTaskProvider"),
-    level = DeprecationLevel.WARNING
-)
-val Variant.mergeJavaResourceTask: Task?
-    get() = project.tasks.findByName(getTaskName("merge", "JavaResource"))
+fun Variant?.filterByNameOrBuildType(): List<Variant>.() -> List<Variant> = {
+    filterByName().invoke(this).takeIf {
+        it.isNotEmpty()
+    } ?: filterByBuildType().invoke(this)
+}

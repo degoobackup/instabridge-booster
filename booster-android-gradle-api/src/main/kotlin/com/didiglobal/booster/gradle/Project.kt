@@ -1,7 +1,12 @@
 package com.didiglobal.booster.gradle
 
+import com.android.build.api.variant.AndroidComponentsExtension
+import com.android.build.api.variant.ApplicationAndroidComponentsExtension
+import com.android.build.api.variant.LibraryAndroidComponentsExtension
 import com.android.build.api.variant.Variant
 import com.android.build.gradle.internal.SdkComponentsBuildService
+import com.android.build.gradle.internal.plugins.AppPlugin
+import com.android.build.gradle.internal.plugins.LibraryPlugin
 import com.android.build.gradle.internal.services.getBuildService
 import com.android.repository.Revision
 import org.gradle.api.Project
@@ -35,18 +40,6 @@ val Project.androidSdkLocation: File
         it.sdkDirectoryProvider
     }.get().asFile
 
-@Deprecated(
-    message = "Use isAapt2Enabled instead",
-    replaceWith = ReplaceWith(
-        expression = "isAapt2Enabled"
-    )
-)
-val Project.aapt2Enabled: Boolean
-    get() = AGP.run { isAapt2Enabled }
-
-val Project.isAapt2Enabled: Boolean
-    get() = AGP.run { isAapt2Enabled }
-
 val Project.isAndroid: Boolean
     get() = plugins.hasPlugin("com.android.application")
             || plugins.hasPlugin("com.android.dynamic-feature")
@@ -74,22 +67,52 @@ fun <T> Project.getProperty(name: String, defaultValue: T): T {
     }
 }
 
+/**
+ * Returns the local android resources or empty list if the project is not an android project
+ */
+val Project.localAndroidResources: List<File>
+    get() = when {
+        isAndroid -> project.variants.mapNotNull(Variant::localAndroidResources).flatten()
+        else -> emptyList()
+    }
+
+@JvmOverloads
 fun Project.getUpstreamProjects(
         transitive: Boolean = true,
-        variant: Variant? = null
-): Set<Project> = getResolvedArtifactResults(transitive, variant).mapNotNull {
-    (it.id.componentIdentifier as? ProjectComponentIdentifier)?.projectPath?.let { projectPath ->
-        rootProject.project(projectPath)
-    }
+        filter: List<Variant>.() -> List<Variant>
+): Set<Project> = getResolvedArtifacts(transitive, filter) {
+    it.id.componentIdentifier as? ProjectComponentIdentifier
+}.map {
+    rootProject.project(it.projectPath)
 }.toSet()
 
+/**
+ * Returns the upstream artifacts of the target project, the dependencies can be filtered based on the target
+ * project’s variant, such as filtering the dependencies corresponding to the `debug` variant of the target project.
+ *
+ * @param T the result of transform function
+ * @param transitive whether to resolve the artifacts transitively
+ * @param filter filter the dependencies by variant
+ * @see [filterByNameOrBuildType]
+ */
+@JvmOverloads
+fun <T> Project.getResolvedArtifacts(
+        transitive: Boolean = true,
+        filter: List<Variant>.() -> List<Variant>,
+        transform: (ResolvedArtifactResult) -> T?
+): Set<T> = getResolvedArtifactResults(transitive, filter).mapNotNull {
+    transform(it)
+}.toSet()
+
+@JvmOverloads
 fun Project.getResolvedArtifactResults(
         transitive: Boolean = true,
-        variant: Variant? = null
+        filter: List<Variant>.() -> List<Variant>
 ): Set<ResolvedArtifactResult> = when {
-    variant == null -> emptySet()
     isAndroid -> getResolvedArtifactResultsRecursively(transitive) {
-        AGP.run { variant.getDependencies(transitive) }.toList()
+        variants.filter().map { v ->
+            AGP.run { v.getDependencies(transitive) }
+        }.flatten()
     }
     isJava -> getResolvedArtifactResultsRecursively(transitive) {
         configurations.getByName(RUNTIME_CLASSPATH_CONFIGURATION_NAME).resolvedConfiguration.resolvedArtifacts.map {
@@ -101,7 +124,14 @@ fun Project.getResolvedArtifactResults(
     it.id.componentIdentifier
 }.toSet()
 
-private fun Project.getResolvedArtifactResultsRecursively(transitive: Boolean, resolve: Project.() -> List<ResolvedArtifactResult>): Set<ResolvedArtifactResult> {
+/**
+ * Returns the resolved artifact results recursively
+ */
+@JvmOverloads
+fun Project.getResolvedArtifactResultsRecursively(
+        transitive: Boolean = true,
+        resolve: Project.() -> List<ResolvedArtifactResult>
+): Set<ResolvedArtifactResult> {
     val stack = Stack<Project>()
     val results = mutableMapOf<ComponentIdentifier, ResolvedArtifactResult>()
 
@@ -128,23 +158,41 @@ private fun Project.getResolvedArtifactResultsRecursively(transitive: Boolean, r
 
 /**
  * Returns the jar files which could be the outputs of the jar task or createFullJar task
- *
- * @param variant The build variant
  */
-fun Project.getJars(variant: Variant): Set<File> = getJarTaskProviders(variant).filterNotNull().map {
+fun Project.getJars(
+        filter: List<Variant>.() -> List<Variant>
+): Set<File> = getJarTaskProviders(filter).map {
     it.get().outputs.files
 }.flatten().toSet()
 
-fun Project.getJarTaskProviders(variant: Variant? = null): Collection<TaskProvider<out Task>> = when {
-    isAndroid -> when  {
-            variant == null -> emptyList()
-            variant.isLibrary  -> variant.createFullJarTaskProvider?.let(::listOf) ?: emptyList()
-            variant.isApplication || variant.isDynamicFeature -> variant.bundleClassesTaskProvider?.let(::listOf) ?: listOf()
-            else -> emptyList()
+/**
+ * Returns the jar task provider of all matched variants
+ * * Android Project
+ *   - application: createFullJar
+ *   - library: bundleClasses
+ * * Java Project
+ *   - jar
+ */
+fun Project.getJarTaskProviders(
+        filter: List<Variant>.() -> List<Variant>
+): Collection<TaskProvider<out Task>> = when {
+    isAndroid -> when (getAndroidComponentsOrNull<AndroidComponentsExtension<*, *, *>>()) {
+        is LibraryAndroidComponentsExtension -> variants.filter().mapNotNull(Variant::createFullJarTaskProvider)
+        is ApplicationAndroidComponentsExtension -> variants.filter().mapNotNull(Variant::bundleClassesTaskProvider)
+        else -> emptyList()
     }
     isJavaLibrary -> listOf(tasks.named(JavaPlugin.JAR_TASK_NAME))
     else -> emptyList()
 }
+
+val Project.variants: List<Variant>
+    get() = when (getAndroidComponentsOrNull<AndroidComponentsExtension<*, *, *>>()) {
+        is ApplicationAndroidComponentsExtension -> plugins.getPlugin(AppPlugin::class.java)
+        is LibraryAndroidComponentsExtension -> plugins.getPlugin(LibraryPlugin::class.java)
+        else -> null
+    }?.variantManager?.mainComponents?.map {
+        it.variant
+    }?.filterIsInstance<Variant>() ?: emptyList()
 
 private data class ResolvedArtifactResultImpl(
         private val artifactId: ComponentArtifactIdentifier,

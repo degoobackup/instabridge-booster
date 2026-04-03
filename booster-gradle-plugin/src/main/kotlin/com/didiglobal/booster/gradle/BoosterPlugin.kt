@@ -9,7 +9,6 @@ import com.android.build.gradle.LibraryExtension
 import com.android.build.gradle.api.BaseVariant
 import com.didiglobal.booster.kotlinx.capitalized
 import com.didiglobal.booster.task.spi.VariantProcessor
-import com.didiglobal.booster.task.transform.BoosterTransformTask
 import org.gradle.api.GradleException
 import org.gradle.api.Plugin
 import org.gradle.api.Project
@@ -20,7 +19,6 @@ import org.gradle.api.Project
  * @author johnsonlee
  */
 class BoosterPlugin : Plugin<Project> {
-
     override fun apply(project: Project) {
         project.extensions.findByName("android") ?: throw GradleException("$project is not an Android project")
         registerTransform(project)
@@ -72,23 +70,25 @@ class BoosterPlugin : Plugin<Project> {
     private fun registerTransform(project: Project) {
         val androidComponents = project.extensions.getByType(AndroidComponentsExtension::class.java)
         androidComponents.onVariants { variant ->
-            val transform = project.tasks.register(
-                "transform${variant.name.capitalized()}ClassesWithBooster",
-                BoosterTransformTask::class.java
-            ) {
-                it.transformers = loadTransformers(project.buildscript.classLoader)
-                it.variant = variant
-                it.applicationId = variant.namespace.get()
-                it.bootClasspath = androidComponents.sdkComponents.bootClasspath
-            }
-            variant.artifacts.forScope(ScopedArtifacts.Scope.ALL)
-                .use(transform).toTransform(
+            val transform =
+                project.tasks.register(
+                    "transform${variant.name.capitalized()}ClassesWithBooster",
+                    BoosterTransformTask::class.java,
+                ) {
+                    it.transformers = loadTransformers(project.buildscript.classLoader)
+                    it.variant = variant
+                    it.applicationId = variant.namespace.get()
+                    it.bootClasspath = androidComponents.sdkComponents.bootClasspath
+                }
+            variant.artifacts
+                .forScope(ScopedArtifacts.Scope.ALL)
+                .use(transform)
+                .toTransform(
                     ScopedArtifact.CLASSES,
                     BoosterTransformTask::allJars,
                     BoosterTransformTask::allDirectories,
-                    BoosterTransformTask::output
+                    BoosterTransformTask::output,
                 )
         }
     }
-
 }
