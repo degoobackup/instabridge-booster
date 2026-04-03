@@ -9,5 +9,6 @@ buildscript {
         classpath("com.didiglobal.booster:booster-android-gradle-compat:1.0.0-SNAPSHOT")
         classpath("com.didiglobal.booster:booster-android-gradle-v8_12:1.0.0-SNAPSHOT")
         classpath("com.didiglobal.booster:booster-transform-shared-preferences:1.0.0-SNAPSHOT")
+        classpath("com.didiglobal.booster:booster-transform-thread:1.0.0-SNAPSHOT")
     }
 }
