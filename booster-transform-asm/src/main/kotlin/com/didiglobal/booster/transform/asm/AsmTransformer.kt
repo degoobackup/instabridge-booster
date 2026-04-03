@@ -8,6 +8,7 @@ import com.didiglobal.booster.transform.util.diff
 import com.google.auto.service.AutoService
 import org.objectweb.asm.ClassReader
 import org.objectweb.asm.ClassWriter
+import org.objectweb.asm.Opcodes
 import org.objectweb.asm.tree.ClassNode
 import java.io.File
 import java.io.InputStream
@@ -24,7 +25,6 @@ import java.util.jar.JarFile
  */
 @AutoService(Transformer::class)
 class AsmTransformer : Transformer {
-
     private val threadMxBean = ManagementFactory.getThreadMXBean()
 
     private val durations = mutableMapOf<ClassTransformer, Duration>()
@@ -35,9 +35,12 @@ class AsmTransformer : Transformer {
 
     constructor() : this(Thread.currentThread().contextClassLoader)
 
-    constructor(classLoader: ClassLoader = Thread.currentThread().contextClassLoader) : this(ServiceLoader.load(ClassTransformer::class.java, classLoader).sortedBy {
-        it.javaClass.getAnnotation(Priority::class.java)?.value ?: 0
-    }, classLoader)
+    constructor(classLoader: ClassLoader = Thread.currentThread().contextClassLoader) : this(
+        ServiceLoader.load(ClassTransformer::class.java, classLoader).sortedBy {
+            it.javaClass.getAnnotation(Priority::class.java)?.value ?: 0
+        },
+        classLoader,
+    )
 
     constructor(transformers: Iterable<ClassTransformer>, classLoader: ClassLoader = Thread.currentThread().contextClassLoader) {
         this.classLoader = classLoader
@@ -52,29 +55,48 @@ class AsmTransformer : Transformer {
         }
     }
 
-    override fun transform(context: TransformContext, bytecode: ByteArray): ByteArray {
+    override fun transform(
+        context: TransformContext,
+        bytecode: ByteArray,
+    ): ByteArray {
         val diffEnabled = context.getProperty("booster.transform.diff", false)
-        return ClassWriter(ClassWriter.COMPUTE_MAXS).also { writer ->
-            this.transformers.fold(ClassNode().also { klass ->
-                ClassReader(bytecode).accept(klass, 0)
-            }) { a, transformer ->
-                this.threadMxBean.sumCpuTime(transformer) {
-                    if (diffEnabled) {
-                        val left = a.textify()
-                        transformer.transform(context, a).also trans@{ b ->
-                            val right = b.textify()
-                            val diff = if (left == right) "" else left diff right
-                            if (diff.isEmpty() || diff.isBlank()) {
-                                return@trans
+        val transformedKlass =
+            this.transformers
+                .fold(
+                    ClassNode().also { klass ->
+                        ClassReader(bytecode).accept(klass, 0)
+                    },
+                ) { a, transformer ->
+                    this.threadMxBean.sumCpuTime(transformer) {
+                        if (diffEnabled) {
+                            val left = a.textify()
+                            transformer.transform(context, a).also trans@{ b ->
+                                val right = b.textify()
+                                val diff = if (left == right) "" else left diff right
+                                if (diff.isEmpty() || diff.isBlank()) {
+                                    return@trans
+                                }
+                                transformer.getReport(context, "${a.className}.diff").touch().writeText(diff)
                             }
-                            transformer.getReport(context, "${a.className}.diff").touch().writeText(diff)
+                        } else {
+                            transformer.transform(context, a)
                         }
-                    } else {
-                        transformer.transform(context, a)
                     }
                 }
-            }.accept(writer)
-        }.toByteArray()
+
+        // Pre-Java 7 classes (version < 51) may contain JSR/RET instructions that
+        // COMPUTE_FRAMES cannot handle, and they don't use StackMapTable. For these
+        // legacy classes, COMPUTE_MAXS preserves the original frames and is sufficient.
+        // Modern classes get COMPUTE_FRAMES for correct StackMapTable generation,
+        // using the KlassPool's classloader to resolve class hierarchy.
+        val writer =
+            if (transformedKlass.version < Opcodes.V1_7) {
+                ClassWriter(ClassWriter.COMPUTE_MAXS)
+            } else {
+                BoosterClassWriter(ClassWriter.COMPUTE_FRAMES, context.klassPool)
+            }
+        transformedKlass.accept(writer)
+        return writer.toByteArray()
     }
 
     override fun onPostTransform(context: TransformContext) {
@@ -84,15 +106,20 @@ class AsmTransformer : Transformer {
             }
         }
 
-        val w1 = this.durations.keys.map {
-            it.javaClass.name.length
-        }.maxOrNull() ?: 20
+        val w1 =
+            this.durations.keys
+                .map {
+                    it.javaClass.name.length
+                }.maxOrNull() ?: 20
         this.durations.forEach { (transformer, ns) ->
             println("${transformer.javaClass.name.padEnd(w1 + 1)}: ${ns.toMillis()} ms")
         }
     }
 
-    private fun <R> ThreadMXBean.sumCpuTime(transformer: ClassTransformer, action: () -> R): R {
+    private fun <R> ThreadMXBean.sumCpuTime(
+        transformer: ClassTransformer,
+        action: () -> R,
+    ): R {
         val ct0 = this.currentThreadCpuTime
         val result = action()
         val ct1 = this.currentThreadCpuTime
@@ -101,18 +128,21 @@ class AsmTransformer : Transformer {
         } + Duration.ofNanos(ct1 - ct0)
         return result
     }
-
 }
 
-fun JarFile.transform(name: String, consumer: (ClassNode) -> Unit) = getJarEntry(name)?.let { entry ->
+fun JarFile.transform(
+    name: String,
+    consumer: (ClassNode) -> Unit,
+) = getJarEntry(name)?.let { entry ->
     getInputStream(entry).use { input ->
         consumer(input.asClassNode())
     }
 }
 
-fun ByteArray.asClassNode() = ClassNode().also { klass ->
-    ClassReader(this).accept(klass, 0)
-}
+fun ByteArray.asClassNode() =
+    ClassNode().also { klass ->
+        ClassReader(this).accept(klass, 0)
+    }
 
 fun InputStream.asClassNode() = readBytes().asClassNode()
 
