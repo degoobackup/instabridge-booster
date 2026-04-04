@@ -1,9 +1,83 @@
 apply plugin: 'kotlin'
 apply plugin: 'kotlin-kapt'
-apply plugin: 'io.johnsonlee.buildprops'
 
 sourceCompatibility = JavaVersion.VERSION_17
 targetCompatibility = JavaVersion.VERSION_17
+
+// Custom Build.java generation (replaces io.johnsonlee.buildprops plugin)
+// The package is always derived from "com.didiglobal.booster.<module-name>" so that
+// imports remain stable regardless of the actual project.group value.
+// Build.GROUP is set to the real project.group, which on JitPack will be
+// "com.github.degoobackup.instabridge-booster".
+def mkpkg(String input) {
+    def sb = new StringBuilder()
+    def first = true
+    for (int i = 0; i < input.length(); i++) {
+        char c = input.charAt(i)
+        if (first) {
+            sb.append(Character.isJavaIdentifierStart(c) ? c : '.' as char)
+            first = false
+        } else if (c == '.' as char) {
+            sb.append(c)
+            first = true
+        } else {
+            sb.append(Character.isJavaIdentifierPart(c) ? c : '.' as char)
+        }
+    }
+    def parts = sb.toString().split('\\.')
+    def deduped = []
+    for (def part : parts) {
+        if (part.isEmpty()) continue
+        if (deduped.isEmpty() || deduped.last() != part) {
+            deduped.add(part)
+        }
+    }
+    return deduped.join('.')
+}
+
+def gitRevision() {
+    try {
+        def gitLogsHead = new File(project.rootDir, '.git/logs/HEAD')
+        if (gitLogsHead.exists()) {
+            def lastLine = gitLogsHead.readLines().findAll { !it.isEmpty() }.last()
+            return lastLine.split(' ')[1]
+        }
+    } catch (Exception ignored) {}
+    return 'unknown'
+}
+
+// Always derive the package from the canonical group so imports don't change
+def canonicalGroup = 'com.didiglobal.booster'
+def buildPkg = mkpkg("${canonicalGroup}.${project.name}")
+def outputDir = new File(project.buildDir, "generated/source/buildprops/main/java")
+
+task generateBuildJavaFile {
+    def pkgDir = new File(outputDir, buildPkg.replace('.', '/'))
+    def outputFile = new File(pkgDir, 'Build.java')
+
+    inputs.property('group', project.group)
+    inputs.property('name', project.name)
+    inputs.property('version', project.version)
+    outputs.file(outputFile)
+
+    doLast {
+        pkgDir.mkdirs()
+        def revision = gitRevision()
+        outputFile.text = """\
+/**
+ * DO NOT MODIFY! This file is generated automatically.
+ */
+package ${buildPkg};
+
+public interface Build {
+    String GROUP = "${project.group}";
+    String ARTIFACT = "${project.name}";
+    String VERSION = "${project.version}";
+    String REVISION = "${revision}";
+}
+"""
+    }
+}
 
 sourceSets {
     main {
