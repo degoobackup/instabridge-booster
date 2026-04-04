@@ -27,10 +27,11 @@ allprojects { project ->
     apply plugin: 'kotlin'
     apply plugin: 'maven-publish'
 
-    // On JitPack, GROUP env var is set to e.g. "com.github.degoobackup.instabridge-booster".
-    // We use it for the Maven coordinate group, but the Build.java package always uses
-    // the canonical 'com.didiglobal.booster' prefix so that source imports remain stable.
-    group = System.getenv('JITPACK') ? System.getenv('GROUP') ?: 'com.didiglobal.booster' : 'com.didiglobal.booster'
+    // On JitPack, GROUP is "com.github.USER" and ARTIFACT is the repo name.
+    // For multi-module repos the consumer group is "com.github.USER.REPO",
+    // i.e. GROUP + "." + ARTIFACT. The Build.java package always uses the
+    // canonical 'com.didiglobal.booster' prefix so that source imports remain stable.
+    group = System.getenv('JITPACK') ? "${System.getenv('GROUP')}.${System.getenv('ARTIFACT')}" : 'com.didiglobal.booster'
     version = findProperty('version').with { it != DEFAULT_VERSION ? it : null } ?: '1.0.0-SNAPSHOT'
 
     repositories {
